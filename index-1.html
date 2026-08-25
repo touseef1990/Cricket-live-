@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>cricScore — Live Cricket Scores, Series, Stats &amp; Rankings</title>
+<meta name="description" content="cricScore: live cricket scores, match center, series, teams, players, rankings, stats and records — fast, mobile-first cricket platform.">
+<meta name="theme-color" content="#0d3b26">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="cricScore">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS — design system (light / dark)
+   ============================================================ */
+:root {
+  --bg: #f4f6f5;
+  --surface: #ffffff;
+  --surface-2: #eef1ef;
+  --border: #e1e6e3;
+  --text: #14211a;
+  --text-2: #5c6a63;
+  --text-3: #94a099;
+
+  --brand: #0d3b26;
+  --brand-2: #145c3c;
+  --emerald: #1f9e5c;
+  --gold: #c9a227;
+  --live: #d92b3d;
+  --upcoming: #d9911a;
+  --finished: #1f9e5c;
+
+  --shadow-sm: 0 1px 3px rgba(13,59,38,0.08);
+  --shadow-md: 0 4px 16px rgba(13,59,38,0.10);
+  --shadow-lg: 0 10px 30px rgba(13,59,38,0.16);
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px;
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  --bg: #0c1310;
+  --surface: #131c17;
+  --surface-2: #1a251f;
+  --border: #24312a;
+  --text: #eef3f0;
+  --text-2: #a3b0a9;
+  --text-3: #6e7b74;
+
+  --brand: #1a5c3c;
+  --brand-2: #22764d;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.35);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.45);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'Inter', -apple-system, Roboto, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  transition: background 0.25s ease, color 0.25s ease;
+}
+h1,h2,h3,.brand,.sectionTitle,.tabBtn,.cardTitle { font-family: 'Manrope', sans-serif; }
+a { color: inherit; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+.app { max-width: 480px; margin: 0 auto; position: relative; }
+@media (min-width: 900px) {
+  .app { max-width: 1180px; }
+  body { padding-bottom: 24px; }
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+header.appHeader {
+  position: sticky; top: 0; z-index: 30;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color: #fff;
+  padding: calc(14px + env(safe-area-inset-top)) 16px 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--shadow-md);
+}
+.brand { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 8px; letter-spacing: 0.2px; cursor: pointer; }
+.brand .ball { font-size: 18px; }
+.headerActions { display: flex; gap: 8px; align-items: center; }
+.iconBtn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.3);
+  color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.iconBtn:active { transform: scale(0.92); }
+
+/* Desktop top nav */
+.topNav { display: none; }
+@media (min-width: 900px) {
+  .topNav {
+    display: flex; gap: 4px; align-items: center; margin-left: 28px; flex: 1; flex-wrap: wrap;
+  }
+  .topNavBtn {
+    background: rgba(255,255,255,0.08); border: 1px solid transparent; color: rgba(255,255,255,0.88);
+    font-size: 12.5px; font-weight: 700; padding: 8px 12px; border-radius: 20px; white-space: nowrap;
+  }
+  .topNavBtn.active { background: #fff; color: var(--brand); }
+}
+
+/* ============================================================
+   LAYOUT / SECTIONS
+   ============================================================ */
+main, .pageContainer { display: block; }
+.sectionTitle {
+  font-size: 15px; font-weight: 800; color: var(--text);
+  padding: 20px 16px 10px 16px; display: flex; align-items: center; justify-content: space-between;
+}
+.sectionTitle .sub { font-size: 11px; font-weight: 600; color: var(--text-3); }
+.sectionTitle .linkBtn { font-size: 11.5px; font-weight: 700; color: var(--brand-2); background: none; border: none; }
+[data-theme="dark"] .sectionTitle .linkBtn { color: #4bd18a; }
+.hScroll { display: flex; overflow-x: auto; gap: 12px; padding: 0 16px 4px 16px; scroll-snap-type: x mandatory; }
+.hScroll::-webkit-scrollbar { display: none; }
+.vList { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; }
+@media (min-width: 640px) { .grid2 { grid-template-columns: 1fr 1fr 1fr; } }
+@media (min-width: 900px) { .grid2 { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+
+.pageHead { padding: calc(14px + env(safe-area-inset-top)) 16px 14px 16px; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; }
+.pageHead h1 { font-size: 18px; font-weight: 800; margin-bottom: 3px; }
+.pageHead p { font-size: 11.5px; opacity: 0.8; font-weight: 600; }
+
+.chipRow { display: flex; gap: 8px; overflow-x: auto; padding: 12px 16px; }
+.chipRow::-webkit-scrollbar { display: none; }
+.chip { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); font-size: 12px; font-weight: 700; }
+.chip.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+.searchBox { margin: 0 16px 12px 16px; }
+.searchBox input {
+  width: 100%; padding: 11px 14px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font-size: 13px;
+}
+
+/* ============================================================
+   COMMAND CENTER
+   ============================================================ */
+.commandCenter {
+  margin: 14px 16px 0 16px;
+  background: linear-gradient(160deg, var(--brand), #0a2e1d);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+}
+.commandTitle { font-size: 12px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; opacity: 0.75; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.commandGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.commandItem { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 10px 12px; }
+.commandItem .lbl { font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+.commandItem .val { font-size: 13px; font-weight: 700; line-height: 1.35; }
+
+/* ============================================================
+   MATCH / GENERIC CARDS
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: transform 0.12s ease, box-shadow 0.2s ease;
+}
+.card:active { transform: scale(0.98); }
+.liveCard { flex: 0 0 88%; scroll-snap-align: start; }
+.cardTop { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 6px 14px; }
+.seriesTag { font-size: 11px; color: var(--text-3); font-weight: 600; max-width: 72%; line-height: 1.3; }
+.statusBadge { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.3px; white-space: nowrap; }
+.statusBadge.live { background: var(--live); color: #fff; display: flex; align-items: center; gap: 5px; }
+.statusBadge.upcoming { background: rgba(217,145,26,0.15); color: var(--upcoming); }
+.statusBadge.finished { background: rgba(31,158,92,0.14); color: var(--finished); }
+.livePulse { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: pulse 1.1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.teamLine { display: flex; align-items: center; justify-content: space-between; padding: 7px 16px; }
+.teamLeft { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.teamBadge {
+  width: 32px; height: 32px; border-radius: 9px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800;
+}
+.teamBadge.lg { width: 52px; height: 52px; border-radius: 14px; font-size: 16px; }
+.teamNm { font-size: 14px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.teamSc { font-size: 14px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.cardMeta { padding: 6px 16px 12px 16px; font-size: 12px; color: var(--text-2); font-weight: 600; }
+.cardFooter {
+  border-top: 1px solid var(--border); background: var(--surface-2);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 14px;
+}
+.cardFooter .cta { font-size: 11.5px; font-weight: 800; color: var(--brand-2); letter-spacing: 0.3px; }
+[data-theme="dark"] .cardFooter .cta { color: #4bd18a; }
+.remindBtn {
+  font-size: 10.5px; font-weight: 700; color: var(--text-2);
+  background: transparent; border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px;
+}
+.remindBtn.on { background: var(--gold); color: #1a1408; border-color: var(--gold); }
+
+/* Entity cards: team / player / venue / series */
+.entityCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 16px 12px; text-align: center; }
+.entityCard .avatar { width: 48px; height: 48px; border-radius: 14px; margin: 0 auto 10px auto; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; }
+.entityCard .nm { font-size: 12.5px; font-weight: 800; color: var(--text); line-height: 1.3; }
+.entityCard .sub { font-size: 10.5px; color: var(--text-3); font-weight: 600; margin-top: 3px; }
+
+.rowCard { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.rowCard .avatar { width: 40px; height: 40px; border-radius: 11px; flex-shrink: 0; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12.5px; }
+.rowCard .info { flex: 1; min-width: 0; }
+.rowCard .nm { font-size: 13.5px; font-weight: 700; color: var(--text); }
+.rowCard .sub { font-size: 11px; color: var(--text-3); font-weight: 600; margin-top: 2px; }
+.rowCard .rt { font-size: 13px; font-weight: 800; color: var(--brand-2); flex-shrink: 0; }
+[data-theme="dark"] .rowCard .rt { color: #4bd18a; }
+
+.seriesCard { padding: 14px 15px; }
+.seriesCard .nm { font-size: 13.5px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.seriesCard .meta { font-size: 11px; color: var(--text-3); font-weight: 600; }
+.seriesCard .statusRow { margin-top: 10px; display: flex; gap: 6px; align-items: center; }
+
+.newsAdminCard { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 15px; }
+.newsAdminCard .cat { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; color: var(--brand-2); }
+[data-theme="dark"] .newsAdminCard .cat { color: #4bd18a; }
+.newsAdminCard .ttl { font-size: 13.5px; font-weight: 800; color: var(--text); margin: 5px 0 5px 0; line-height: 1.35; }
+.newsAdminCard .smry { font-size: 12px; color: var(--text-2); line-height: 1.55; }
+.newsAdminCard .dt { font-size: 10.5px; color: var(--text-3); font-weight: 600; margin-top: 8px; }
+
+.recordCard { padding: 13px 15px; }
+.recordCard .ttl { font-size: 12.5px; font-weight: 700; color: var(--text-2); }
+.recordCard .val { font-size: 16px; font-weight: 800; color: var(--brand-2); margin: 4px 0; }
+[data-theme="dark"] .recordCard .val { color: #4bd18a; }
+.recordCard .hold { font-size: 11.5px; color: var(--text-3); font-weight: 600; }
+
+/* ============================================================
+   SKELETONS
+   ============================================================ */
+.skel { background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 37%, var(--surface-2) 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; border-radius: var(--radius-md); }
+@keyframes shimmer { 0%{background-position:100% 0} 100%{background-position:0 0} }
+.skelCard { height: 132px; flex: 0 0 88%; }
+.skelLine { height: 74px; border-radius: var(--radius-md); }
+
+/* ============================================================
+   EMPTY / ERROR / OFFLINE STATES
+   ============================================================ */
+.stateBox { text-align: center; padding: 34px 20px; margin: 0 16px; }
+.stateBox .ic { font-size: 38px; margin-bottom: 10px; }
+.stateBox .ti { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.stateBox .de { font-size: 12px; color: var(--text-2); line-height: 1.6; margin-bottom: 14px; }
+.retryBtn { background: var(--brand); color: #fff; border: none; padding: 10px 22px; border-radius: 22px; font-size: 12.5px; font-weight: 700; }
+
+/* ============================================================
+   MATCH DETAIL SHEET  /  GENERIC DETAIL SHEET
+   ============================================================ */
+#matchSheet, #genericSheet {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: var(--bg);
+  max-width: 480px; margin: 0 auto; overflow-y: auto;
+}
+@media (min-width: 900px) { #matchSheet, #genericSheet { max-width: 680px; left: 0; right: 0; margin: 0 auto; } }
+.sheetHeader {
+  position: sticky; top: 0; z-index: 5;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff;
+  padding: calc(14px + env(safe-area-inset-top)) 16px 18px 16px;
+}
+.sheetTopRow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.sheetMeta { font-size: 11px; opacity: 0.8; font-weight: 600; margin-bottom: 4px; }
+.sheetTitle { font-size: 14.5px; font-weight: 700; line-height: 1.4; margin-bottom: 14px; }
+.scoreboard { display: flex; align-items: center; justify-content: space-between; }
+.sbTeam { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 34%; }
+.sbBadge { width: 46px; height: 46px; border-radius: 12px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+.sbName { font-size: 11.5px; font-weight: 700; text-align: center; line-height: 1.3; }
+.sbScore { font-size: 15px; font-weight: 800; margin-top: 2px; }
+.sbVs { font-size: 11px; opacity: 0.6; font-weight: 700; }
+.sheetStatus { text-align: center; font-size: 12.5px; font-weight: 700; margin-top: 12px; background: rgba(255,255,255,0.12); border-radius: 10px; padding: 8px; }
+
+.tabBar { display: flex; overflow-x: auto; gap: 4px; padding: 10px 12px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 4; }
+.tabBar::-webkit-scrollbar { display: none; }
+.tabBtn { flex-shrink: 0; padding: 8px 14px; border-radius: 20px; border: none; background: transparent; color: var(--text-2); font-size: 12.5px; font-weight: 700; }
+.tabBtn.active { background: var(--brand); color: #fff; }
+.tabPanel { display: none; padding: 14px 16px 30px 16px; }
+.tabPanel.active { display: block; }
+
+.infoRow { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.infoRow:last-child { border-bottom: none; }
+.infoRow .k { font-size: 12px; color: var(--text-2); font-weight: 600; }
+.infoRow .v { font-size: 12.5px; color: var(--text); font-weight: 700; text-align: right; max-width: 60%; }
+
+.scTable { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 16px; }
+.scTable th { text-align: left; background: var(--surface-2); color: var(--text-2); padding: 8px 8px; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+.scTable td { padding: 8px 8px; border-bottom: 1px solid var(--border); color: var(--text); }
+.scTable tr.notOut td:first-child { color: var(--brand-2); font-weight: 800; }
+[data-theme="dark"] .scTable tr.notOut td:first-child { color: #4bd18a; }
+.inningsTitle { font-weight: 800; font-size: 13.5px; margin: 6px 0 8px 0; color: var(--brand-2); display: flex; align-items: center; gap: 6px; }
+[data-theme="dark"] .inningsTitle { color: #4bd18a; }
+
+.tableWrap { overflow-x: auto; margin: 0 -16px; padding: 0 16px; }
+
+/* ============================================================
+   BOTTOM NAV
+   ============================================================ */
+.bottomNav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+  max-width: 480px; margin: 0 auto;
+  background: var(--surface); border-top: 1px solid var(--border);
+  display: flex; justify-content: space-around;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom)) 0;
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+}
+@media (min-width: 900px) { .bottomNav { display: none; } }
+.navItem { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; color: var(--text-3); padding: 4px 12px; border: none; background: transparent; }
+.navItem.active { color: var(--brand-2); }
+[data-theme="dark"] .navItem.active { color: #4bd18a; }
+.navItem .ic { font-size: 18px; }
+
+/* ============================================================
+   NEWS
+   ============================================================ */
+.newsCard { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 13px 15px; text-decoration: none; }
+.newsCard .ni { width: 36px; height: 36px; border-radius: 10px; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.newsCard .nt { font-size: 13px; font-weight: 700; color: var(--text); }
+.newsCard .ns { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.newsCard .na { color: var(--text-3); font-size: 15px; }
+
+/* ============================================================
+   MENU OVERLAY
+   ============================================================ */
+#menuOverlay { display: none; position: fixed; inset: 0; z-index: 95; background: var(--bg); max-width: 480px; margin: 0 auto; overflow-y: auto; }
+@media (min-width: 900px) { #menuOverlay { max-width: 480px; } }
+.menuHead { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; padding: calc(14px + env(safe-area-inset-top)) 16px 18px 16px; display: flex; align-items: center; justify-content: space-between; }
+.menuHead h2 { font-size: 16px; font-weight: 800; }
+.menuGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 18px 16px; }
+.menuTile { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 12px; text-align: center; }
+.menuTile .ic { font-size: 24px; margin-bottom: 8px; }
+.menuTile .lb { font-size: 12.5px; font-weight: 800; color: var(--text); }
+.menuAdminTile { grid-column: 1 / -1; background: var(--surface-2); border: 1px dashed var(--border); }
+
+/* ============================================================
+   ADMIN
+   ============================================================ */
+.adminLoginWrap { max-width: 340px; margin: 60px auto 0 auto; padding: 0 20px; text-align: center; }
+.adminLoginWrap .ic { font-size: 40px; margin-bottom: 10px; }
+.adminLoginWrap h2 { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
+.adminLoginWrap p { font-size: 12px; color: var(--text-2); margin-bottom: 20px; line-height: 1.6; }
+.formField { margin-bottom: 14px; text-align: left; }
+.formField label { display: block; font-size: 11.5px; font-weight: 700; color: var(--text-2); margin-bottom: 6px; }
+.formField input, .formField select, .formField textarea {
+  width: 100%; padding: 11px 13px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); font-size: 13px;
+}
+.formField textarea { min-height: 80px; resize: vertical; }
+.formField .checkRow { display: flex; align-items: center; gap: 8px; }
+.formField .checkRow input { width: auto; }
+.btnPrimary { width: 100%; background: var(--brand); color: #fff; border: none; padding: 12px; border-radius: 12px; font-size: 13.5px; font-weight: 800; }
+.btnGhost { background: transparent; border: 1px solid var(--border); color: var(--text-2); padding: 9px 14px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+.btnDanger { background: rgba(217,43,61,0.1); color: var(--live); border: 1px solid rgba(217,43,61,0.25); padding: 9px 14px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+.securityNote { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 11px; color: var(--text-2); line-height: 1.6; margin: 14px 16px; }
+
+.adminBar { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 0 16px; }
+.adminBar .who { font-size: 12px; font-weight: 700; color: var(--text-2); }
+.adminTabs { display: flex; overflow-x: auto; gap: 6px; padding: 12px 16px; }
+.adminTabs::-webkit-scrollbar { display: none; }
+.adminTabBtn { flex-shrink: 0; padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); font-size: 12px; font-weight: 700; }
+.adminTabBtn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+.adminListItem { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.adminListItem .info { flex: 1; min-width: 0; }
+.adminListItem .nm { font-size: 13px; font-weight: 700; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adminListItem .sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.adminListItem .acts { display: flex; gap: 6px; flex-shrink: 0; }
+.adminListItem .actBtn { width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.addFab { position: sticky; bottom: 16px; margin: 16px; }
+
+#adminFormOverlay, #pointsTableOverlay {
+  display: none; position: fixed; inset: 0; z-index: 110; background: rgba(0,0,0,0.45);
+}
+.formSheet {
+  position: absolute; left: 0; right: 0; bottom: 0; max-width: 480px; margin: 0 auto;
+  background: var(--surface); border-radius: 20px 20px 0 0; padding: 18px 18px calc(24px + env(safe-area-inset-bottom)) 18px;
+  max-height: 88vh; overflow-y: auto;
+}
+@media (min-width: 900px) { .formSheet { max-width: 520px; border-radius: 18px; top: 40px; bottom: auto; max-height: calc(100vh - 80px); } }
+.formSheet h3 { font-size: 15px; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+.formSheet h3 button { background: var(--surface-2); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; }
+
+.ptRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 11px; }
+.ptRow input { padding: 6px 5px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 11px; width: 100%; }
+.ptHead { font-size: 9.5px; font-weight: 800; color: var(--text-3); text-transform: uppercase; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 78px; transform: translateX(-50%);
+  background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 24px;
+  font-size: 12.5px; font-weight: 600; box-shadow: var(--shadow-lg); z-index: 200;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.toast.show { opacity: 1; }
+.favStar { font-size: 15px; color: var(--text-3); background: none; border: none; }
+.favStar.on { color: var(--gold); }
+.searchOverlay { display: none; position: fixed; inset: 0; z-index: 90; background: var(--bg); max-width: 480px; margin: 0 auto; }
+.searchInput { width: 100%; padding: 14px 16px; border: none; background: var(--surface); font-size: 15px; color: var(--text); border-bottom: 1px solid var(--border); }
+.unavailBox { text-align: center; padding: 30px 16px; color: var(--text-3); font-size: 12.5px; line-height: 1.6; }
+.searchGroupLabel { font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-3); padding: 12px 16px 4px 16px; }
+
+.devBanner { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #fff4dc; border-bottom: 1px solid #eecf8a; color: #7a5c00; padding: 8px 14px; font-size: 11px; font-weight: 600; }
+[data-theme="dark"] .devBanner { background: #2a2210; border-color: #4a3d15; color: #e0c060; }
+.devBanner button { background: var(--brand); color: #fff; border: none; border-radius: 14px; padding: 5px 12px; font-size: 10.5px; font-weight: 700; flex-shrink: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* Desktop dashboard layout */
+@media (min-width: 900px) {
+  .desktopGrid { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 0 20px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="appHeader">
+    <div class="brand" id="brandLogo"><span class="ball">🏏</span>cricScore</div>
+    <nav class="topNav" id="topNav"></nav>
+    <div class="headerActions">
+      <button class="iconBtn" id="searchBtn" aria-label="Search">🔍</button>
+      <button class="iconBtn" id="themeBtn" aria-label="Toggle dark mode">🌙</button>
+      <button class="iconBtn" id="menuBtn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <div class="devBanner" id="devBanner">
+    <span id="devBannerText">🔧 Dev Mode: auto-refresh off, API sirf manual tap par chalegi</span>
+    <button id="devToggleBtn">Go Live</button>
+  </div>
+
+  <main id="mainArea">
+    <div class="sectionTitle"><span>⚡ Cricket Command Center</span></div>
+    <div class="commandCenter" id="commandCenter"></div>
+
+    <div class="sectionTitle"><span>🔴 Live Now</span><span class="sub" id="liveCountSub"></span></div>
+    <div class="hScroll" id="liveScroll"></div>
+
+    <div class="sectionTitle"><span>⏳ Upcoming</span><button class="linkBtn" onclick="showPage('matches')">See all →</button></div>
+    <div class="vList" id="upcomingList"></div>
+
+    <div class="sectionTitle"><span>✅ Recent Results</span><button class="linkBtn" onclick="showPage('matches')">See all →</button></div>
+    <div class="vList" id="resultsList"></div>
+
+    <div class="sectionTitle"><span>📰 Cricket News</span><button class="linkBtn" onclick="showPage('news')">See all →</button></div>
+    <div class="vList" id="newsTeaser" style="margin-bottom: 20px;"></div>
+  </main>
+
+  <!-- ============ MATCHES PAGE ============ -->
+  <div class="pageContainer" id="page-matches" style="display:none;">
+    <div class="pageHead"><h1>🏏 Matches</h1><p>All fixtures, live games and results</p></div>
+    <div class="chipRow" id="matchesFilterChips"></div>
+    <div class="vList" id="matchesList" style="margin-bottom:24px;"></div>
+  </div>
+
+  <!-- ============ SERIES PAGE ============ -->
+  <div class="pageContainer" id="page-series" style="display:none;">
+    <div class="pageHead"><h1>🏆 Series &amp; Tournaments</h1><p>Fixtures, points table &amp; squads</p></div>
+    <div class="vList" id="seriesList" style="margin:16px 16px 24px 16px;"></div>
+  </div>
+
+  <!-- ============ TEAMS PAGE ============ -->
+  <div class="pageContainer" id="page-teams" style="display:none;">
+    <div class="pageHead"><h1>🛡️ Teams</h1><p>Squads, captains &amp; team info</p></div>
+    <div class="grid2" id="teamsGrid" style="margin:16px 0 24px 0;"></div>
+  </div>
+
+  <!-- ============ PLAYERS PAGE ============ -->
+  <div class="pageContainer" id="page-players" style="display:none;">
+    <div class="pageHead"><h1>🧑‍🤝‍🧑 Players</h1><p>Profiles &amp; career statistics</p></div>
+    <div class="searchBox" style="margin-top:14px;"><input id="playersSearchInput" placeholder="Player search karein..."></div>
+    <div class="vList" id="playersList" style="margin-bottom:24px;"></div>
+  </div>
+
+  <!-- ============ RANKINGS PAGE ============ -->
+  <div class="pageContainer" id="page-rankings" style="display:none;">
+    <div class="pageHead"><h1>📈 ICC-style Rankings</h1><p>Batting • Bowling • All-rounders</p></div>
+    <div class="chipRow" id="rankFormatChips"></div>
+    <div class="chipRow" id="rankCatChips" style="padding-top:0;"></div>
+    <div class="vList" id="rankingsList" style="margin-bottom:24px;"></div>
+  </div>
+
+  <!-- ============ STATS PAGE ============ -->
+  <div class="pageContainer" id="page-stats" style="display:none;">
+    <div class="pageHead"><h1>📊 Statistics</h1><p>Leaderboards from CricScore player database</p></div>
+    <div id="statsContent" style="margin-bottom:24px;"></div>
+  </div>
+
+  <!-- ============ RECORDS PAGE ============ -->
+  <div class="pageContainer" id="page-records" style="display:none;">
+    <div class="pageHead"><h1>📜 Records</h1><p>All-time cricket records</p></div>
+    <div id="recordsContent" style="margin-bottom:24px;"></div>
+  </div>
+
+  <!-- ============ VENUES PAGE ============ -->
+  <div class="pageContainer" id="page-venues" style="display:none;">
+    <div class="pageHead"><h1>🏟️ Venues</h1><p>Grounds &amp; stadium information</p></div>
+    <div class="grid2" id="venuesGrid" style="margin:16px 0 24px 0;"></div>
+  </div>
+
+  <!-- ============ NEWS PAGE ============ -->
+  <div class="pageContainer" id="page-news" style="display:none;">
+    <div class="pageHead"><h1>📰 Cricket News</h1><p>Latest updates from CricScore</p></div>
+    <div class="chipRow" id="newsCatChips"></div>
+    <div class="vList" id="newsFullList"></div>
+    <div class="sectionTitle"><span>🔗 External Sources</span></div>
+    <div class="vList" id="newsList" style="margin-bottom: 24px;"></div>
+  </div>
+
+  <!-- ============ ADMIN PAGE ============ -->
+  <div class="pageContainer" id="page-admin" style="display:none;">
+    <div id="adminRoot"></div>
+  </div>
+
+  <div id="matchSheet">
+    <div class="sheetHeader">
+      <div class="sheetTopRow">
+        <button class="iconBtn" id="closeSheetBtn" aria-label="Close">←</button>
+        <div style="display:flex; gap:8px;">
+          <button class="iconBtn" id="sheetFavBtn" aria-label="Favorite">☆</button>
+          <button class="iconBtn" id="sheetShareBtn" aria-label="Share">↗</button>
+        </div>
+      </div>
+      <div class="sheetMeta" id="sheetMeta">-</div>
+      <div class="sheetTitle" id="sheetTitle">-</div>
+      <div class="scoreboard" id="sheetScoreboard"></div>
+      <div class="sheetStatus" id="sheetStatus"></div>
+    </div>
+
+    <div class="tabBar" id="tabBar">
+      <button class="tabBtn active" data-tab="summary">Summary</button>
+      <button class="tabBtn" data-tab="scorecard">Scorecard</button>
+      <button class="tabBtn" data-tab="commentary">Commentary</button>
+      <button class="tabBtn" data-tab="stats">Stats</button>
+      <button class="tabBtn" data-tab="squads">Squads</button>
+      <button class="tabBtn" data-tab="info">Info</button>
+    </div>
+
+    <div class="tabPanel active" id="tab-summary"></div>
+    <div class="tabPanel" id="tab-scorecard"></div>
+    <div class="tabPanel" id="tab-commentary"></div>
+    <div class="tabPanel" id="tab-stats"></div>
+    <div class="tabPanel" id="tab-squads"></div>
+    <div class="tabPanel" id="tab-info"></div>
+  </div>
+
+  <!-- Generic detail sheet used by Team / Player / Series / Venue -->
+  <div id="genericSheet">
+    <div class="sheetHeader">
+      <div class="sheetTopRow">
+        <button class="iconBtn" id="closeGenericBtn" aria-label="Close">←</button>
+        <div></div>
+      </div>
+      <div class="sheetMeta" id="genericMeta">-</div>
+      <div class="sheetTitle" id="genericTitle" style="margin-bottom:0;">-</div>
+    </div>
+    <div id="genericBody" style="padding:16px;"></div>
+  </div>
+
+  <div class="searchOverlay" id="searchOverlay">
+    <div class="devBanner" style="background:var(--surface); border-bottom:1px solid var(--border);">
+      <input class="searchInput" id="searchInput" placeholder="Teams, players, matches, news search karein...">
+      <button id="closeSearchBtn" style="background:var(--surface-2); color:var(--text);">✕</button>
+    </div>
+    <div id="searchResults" style="margin-top:6px; padding-bottom:20px;"></div>
+  </div>
+
+  <div id="menuOverlay">
+    <div class="menuHead">
+      <h2>Menu</h2>
+      <button class="iconBtn" id="closeMenuBtn" aria-label="Close">✕</button>
+    </div>
+    <div class="menuGrid" id="menuGrid"></div>
+  </div>
+
+  <div id="adminFormOverlay"><div class="formSheet" id="adminFormSheet"></div></div>
+  <div id="pointsTableOverlay"><div class="formSheet" id="pointsTableSheet"></div></div>
+
+  <div class="toast" id="toast"></div>
+
+  <nav class="bottomNav">
+    <button class="navItem active" data-tab="home"><span class="ic">🏠</span>Home</button>
+    <button class="navItem" data-tab="matches"><span class="ic">🏏</span>Matches</button>
+    <button class="navItem" data-tab="series"><span class="ic">🏆</span>Series</button>
+    <button class="navItem" data-tab="stats"><span class="ic">📊</span>Stats</button>
+    <button class="navItem" data-tab="more"><span class="ic">☰</span>More</button>
+  </nav>
+
+</div>
+<script>
+/* ============================================================
+   1. CONFIG
+   ============================================================ */
+// ⚠️ DEV NOTE (see section 23 of spec): this key is exposed client-side.
+// For production, route requests through a backend proxy so the key
+// never ships to the browser. Kept here only for local prototyping.
+const CONFIG = {
+  API_KEY: "55c8a947-2933-4a5b-b7a7-4371164ef9ff",
+  BASE: "https://api.cricapi.com/v1",
+  REFRESH_MS: 15 * 60 * 1000,
+  FETCH_TIMEOUT_MS: 15000,
+};
+
+/* ============================================================
+   2. STATE
+   ============================================================ */
+const STATE = {
+  matches: [],
+  lastFetch: null,
+  devMode: true,
+  theme: localStorage.getItem("cs_theme") || "light",
+  favorites: JSON.parse(localStorage.getItem("cs_favorites") || "[]"),
+  reminders: JSON.parse(localStorage.getItem("cs_reminders") || "[]"),
+  activeBottomTab: "home",
+  activeSheetTab: "summary",
+  currentMatchId: null,
+  prevScores: JSON.parse(sessionStorage.getItem("cs_prevScores") || "{}"),
+  activePage: "home",
+  matchesFilter: "all",
+  rankFormat: "ODI",
+  rankCat: "Batting",
+  newsCat: "All",
+};
+
+/* ============================================================
+   3. UTILITIES
+   ============================================================ */
+function esc(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+function initials(name) {
+  if (!name) return "??";
+  const clean = String(name).replace(/women|men/gi, "").trim();
+  const words = clean.split(" ").filter(Boolean);
+  if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+function fmtDateTime(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const now = new Date();
+  const isToday = d.toDateString() === now.toDateString();
+  const dateStr = isToday ? "Today" : d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  const timeStr = d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  return `${dateStr} • ${timeStr}`;
+}
+function countdown(iso) {
+  const diff = new Date(iso) - new Date();
+  if (diff <= 0) return "Starting soon";
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (h >= 24) return Math.floor(h/24) + "d " + (h%24) + "h";
+  return h + "h " + m + "m";
+}
+function stateOf(m) {
+  if (m.matchStarted === true && m.matchEnded !== true) return "live";
+  if (m.matchStarted === false) return "upcoming";
+  if (m.dateTimeGMT) {
+    const t = new Date(m.dateTimeGMT).getTime();
+    if (!isNaN(t) && t > Date.now()) return "upcoming";
+  }
+  return "finished";
+}
+function scoreLine(m, i) {
+  if (!m.score || !m.score[i]) return "";
+  const s = m.score[i];
+  return `${s.r}/${s.w} (${s.o} ov)`;
+}
+function runRate(m, i) {
+  if (!m.score || !m.score[i]) return null;
+  const s = m.score[i];
+  if (!s.o || s.o === 0) return null;
+  return (s.r / s.o).toFixed(2);
+}
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+function fetchWithTimeout(url, ms) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms || CONFIG.FETCH_TIMEOUT_MS);
+  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timer));
+}
+
+/* ============================================================
+   4. API SERVICE LAYER
+   ============================================================ */
+const CricketAPI = {
+  async getCurrentMatches() {
+    const res = await fetchWithTimeout(`${CONFIG.BASE}/currentMatches?apikey=${CONFIG.API_KEY}&offset=0`);
+    return res.json();
+  },
+  async getMatchInfo(id) {
+    const res = await fetchWithTimeout(`${CONFIG.BASE}/match_info?apikey=${CONFIG.API_KEY}&id=${id}`);
+    return res.json();
+  },
+  async getScorecard(id) {
+    const res = await fetchWithTimeout(`${CONFIG.BASE}/match_scorecard?apikey=${CONFIG.API_KEY}&id=${id}`);
+    return res.json();
+  },
+  // NOT AVAILABLE on the current free plan — kept as documented stubs so the
+  // architecture is ready if the API plan is upgraded later (section 22/39).
+  // Series / Teams / Players / Rankings / Points table / ball-by-ball are
+  // instead powered by the local Admin-managed database (see section 4B)
+  // until a real backend/API is connected.
+  async getSeries() { return { status: "unavailable" }; },
+  async getTeams() { return { status: "unavailable" }; },
+  async getPlayers() { return { status: "unavailable" }; },
+  async getRankings() { return { status: "unavailable" }; },
+  async getPointsTable() { return { status: "unavailable" }; },
+  async getBallByBall() { return { status: "unavailable" }; },
+};
+
+/* ============================================================
+   4B. LOCAL DATABASE (Admin-managed content)
+   Powers Teams / Players / Series / Venues / News / Rankings / Records.
+   Stored in this browser via localStorage. This keeps the app fully
+   working with zero backend, while the data shape below is exactly
+   what a real API/backend should return later (see section 22 of spec) —
+   swap dbGet()/dbSet() for real fetch() calls when a backend exists.
+   ============================================================ */
+const DB_PREFIX = "cs_db_";
+function dbGet(key) {
+  try { return JSON.parse(localStorage.getItem(DB_PREFIX + key) || "[]"); }
+  catch (e) { return []; }
+}
+function dbSet(key, val) { localStorage.setItem(DB_PREFIX + key, JSON.stringify(val)); }
+function genId() { return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7); }
+
+function seedDatabase() {
+  if (!localStorage.getItem(DB_PREFIX + "seeded")) {
+    const teams = [
+      { id: genId(), name: "Pakistan", shortName: "PAK", country: "Pakistan", captain: "Babar Azam", coach: "Gary Kirsten" },
+      { id: genId(), name: "India", shortName: "IND", country: "India", captain: "Rohit Sharma", coach: "Gautam Gambhir" },
+      { id: genId(), name: "Australia", shortName: "AUS", country: "Australia", captain: "Pat Cummins", coach: "Andrew McDonald" },
+      { id: genId(), name: "England", shortName: "ENG", country: "England", captain: "Jos Buttler", coach: "Brendon McCullum" },
+    ];
+    dbSet("teams", teams);
+
+    const players = [
+      { id: genId(), name: "Babar Azam", fullName: "Muhammad Babar Azam", country: "Pakistan", role: "Batter", battingStyle: "Right-hand bat", bowlingStyle: "-", teamId: teams[0].id, matches: 118, runs: 5729, wickets: 0, average: 56.7, strikeRate: 88.5 },
+      { id: genId(), name: "Shaheen Afridi", fullName: "Shaheen Shah Afridi", country: "Pakistan", role: "Bowler", battingStyle: "Left-hand bat", bowlingStyle: "Left-arm fast", teamId: teams[0].id, matches: 96, runs: 420, wickets: 178, average: 24.1, strikeRate: 92.0 },
+      { id: genId(), name: "Virat Kohli", fullName: "Virat Kohli", country: "India", role: "Batter", battingStyle: "Right-hand bat", bowlingStyle: "-", teamId: teams[1].id, matches: 292, runs: 13906, wickets: 4, average: 57.9, strikeRate: 93.6 },
+      { id: genId(), name: "Jasprit Bumrah", fullName: "Jasprit Jasbirsingh Bumrah", country: "India", role: "Bowler", battingStyle: "Right-hand bat", bowlingStyle: "Right-arm fast", teamId: teams[1].id, matches: 89, runs: 108, wickets: 149, average: 21.5, strikeRate: 84.0 },
+      { id: genId(), name: "Pat Cummins", fullName: "Patrick James Cummins", country: "Australia", role: "All-rounder", battingStyle: "Right-hand bat", bowlingStyle: "Right-arm fast", teamId: teams[2].id, matches: 76, runs: 1250, wickets: 210, average: 22.6, strikeRate: 82.4 },
+      { id: genId(), name: "Jos Buttler", fullName: "Joseph Charles Buttler", country: "England", role: "Wicketkeeper", battingStyle: "Right-hand bat", bowlingStyle: "-", teamId: teams[3].id, matches: 187, runs: 5210, wickets: 0, average: 39.9, strikeRate: 118.3 },
+    ];
+    dbSet("players", players);
+
+    const seriesId = genId();
+    dbSet("series", [
+      {
+        id: seriesId, name: "CricScore Tri-Series 2026", format: "ODI",
+        startDate: "2026-09-01", endDate: "2026-09-20", status: "Upcoming",
+      },
+    ]);
+    dbSet("points", [
+      { id: genId(), seriesId, team: "Pakistan", played: 0, won: 0, lost: 0, tied: 0, nr: 0, points: 0, nrr: "0.00" },
+      { id: genId(), seriesId, team: "India", played: 0, won: 0, lost: 0, tied: 0, nr: 0, points: 0, nrr: "0.00" },
+      { id: genId(), seriesId, team: "Australia", played: 0, won: 0, lost: 0, tied: 0, nr: 0, points: 0, nrr: "0.00" },
+    ]);
+
+    dbSet("venues", [
+      { id: genId(), name: "Gaddafi Stadium", city: "Lahore", country: "Pakistan", capacity: 27000 },
+      { id: genId(), name: "Melbourne Cricket Ground", city: "Melbourne", country: "Australia", capacity: 100000 },
+      { id: genId(), name: "Eden Gardens", city: "Kolkata", country: "India", capacity: 68000 },
+    ]);
+
+    dbSet("news", [
+      { id: genId(), title: "CricScore platform upgraded with Teams, Players, Rankings &amp; Admin panel", category: "Breaking News", summary: "The CricScore app has been rebuilt into a fuller cricket platform — manage teams, players, series and more directly from the new Admin panel.", date: new Date().toISOString().slice(0,10), published: true },
+    ]);
+
+    dbSet("records", [
+      { id: genId(), title: "Highest Individual Score (ODI)", holder: "Rohit Sharma", value: "264", format: "ODI" },
+      { id: genId(), title: "Best Bowling Figures (T20I)", holder: "Deepak Chahar", value: "6/7", format: "T20I" },
+      { id: genId(), title: "Most Wickets (Test)", holder: "Muttiah Muralitharan", value: "800", format: "Test" },
+    ]);
+
+    dbSet("rankings", [
+      { id: genId(), category: "Batting", format: "ODI", rank: 1, playerName: "Babar Azam", country: "Pakistan", rating: 872 },
+      { id: genId(), category: "Batting", format: "ODI", rank: 2, playerName: "Virat Kohli", country: "India", rating: 865 },
+      { id: genId(), category: "Bowling", format: "ODI", rank: 1, playerName: "Jasprit Bumrah", country: "India", rating: 701 },
+      { id: genId(), category: "All-rounder", format: "T20I", rank: 1, playerName: "Pat Cummins", country: "Australia", rating: 305 },
+    ]);
+
+    localStorage.setItem(DB_PREFIX + "seeded", "1");
+  }
+}
+seedDatabase();
+
+const ENTITY_SCHEMAS = {
+  teams: {
+    label: "Teams", icon: "🛡️",
+    fields: [
+      { key: "name", label: "Team Name", type: "text", required: true },
+      { key: "shortName", label: "Short Code", type: "text" },
+      { key: "country", label: "Country / Region", type: "text" },
+      { key: "captain", label: "Captain", type: "text" },
+      { key: "coach", label: "Coach", type: "text" },
+    ],
+  },
+  players: {
+    label: "Players", icon: "🧑‍🤝‍🧑",
+    fields: [
+      { key: "name", label: "Display Name", type: "text", required: true },
+      { key: "fullName", label: "Full Name", type: "text" },
+      { key: "country", label: "Country", type: "text" },
+      { key: "role", label: "Role", type: "select", options: ["Batter", "Bowler", "All-rounder", "Wicketkeeper"] },
+      { key: "battingStyle", label: "Batting Style", type: "text" },
+      { key: "bowlingStyle", label: "Bowling Style", type: "text" },
+      { key: "teamId", label: "Team", type: "teamSelect" },
+      { key: "matches", label: "Matches", type: "number" },
+      { key: "runs", label: "Career Runs", type: "number" },
+      { key: "wickets", label: "Career Wickets", type: "number" },
+      { key: "average", label: "Batting Average", type: "number" },
+      { key: "strikeRate", label: "Strike Rate", type: "number" },
+    ],
+  },
+  series: {
+    label: "Series", icon: "🏆",
+    fields: [
+      { key: "name", label: "Series Name", type: "text", required: true },
+      { key: "format", label: "Format", type: "select", options: ["Test", "ODI", "T20I", "T20", "First Class"] },
+      { key: "startDate", label: "Start Date", type: "date" },
+      { key: "endDate", label: "End Date", type: "date" },
+      { key: "status", label: "Status", type: "select", options: ["Upcoming", "Ongoing", "Completed"] },
+    ],
+  },
+  venues: {
+    label: "Venues", icon: "🏟️",
+    fields: [
+      { key: "name", label: "Venue Name", type: "text", required: true },
+      { key: "city", label: "City", type: "text" },
+      { key: "country", label: "Country", type: "text" },
+      { key: "capacity", label: "Capacity", type: "number" },
+    ],
+  },
+  news: {
+    label: "News", icon: "📰",
+    fields: [
+      { key: "title", label: "Headline", type: "text", required: true },
+      { key: "category", label: "Category", type: "select", options: ["Breaking News", "Match Report", "Team News", "Player News", "Series News", "Pakistan Cricket", "International Cricket"] },
+      { key: "summary", label: "Summary", type: "textarea" },
+      { key: "date", label: "Date", type: "date" },
+      { key: "published", label: "Published (visible on site)", type: "checkbox" },
+    ],
+  },
+  records: {
+    label: "Records", icon: "📜",
+    fields: [
+      { key: "title", label: "Record Title", type: "text", required: true },
+      { key: "holder", label: "Holder (Player / Team)", type: "text" },
+      { key: "value", label: "Value", type: "text" },
+      { key: "format", label: "Format", type: "select", options: ["Test", "ODI", "T20I", "T20", "Overall"] },
+    ],
+  },
+  rankings: {
+    label: "Rankings", icon: "📈",
+    fields: [
+      { key: "category", label: "Category", type: "select", options: ["Batting", "Bowling", "All-rounder"] },
+      { key: "format", label: "Format", type: "select", options: ["Test", "ODI", "T20I"] },
+      { key: "rank", label: "Rank", type: "number", required: true },
+      { key: "playerName", label: "Player Name", type: "text", required: true },
+      { key: "country", label: "Country", type: "text" },
+      { key: "rating", label: "Rating Points", type: "number" },
+    ],
+  },
+};
+
+/* ============================================================
+   5. DARK MODE
+   ============================================================ */
+function applyTheme() {
+  document.documentElement.setAttribute("data-theme", STATE.theme);
+  document.getElementById("themeBtn").textContent = STATE.theme === "dark" ? "☀️" : "🌙";
+}
+document.getElementById("themeBtn").onclick = () => {
+  STATE.theme = STATE.theme === "dark" ? "light" : "dark";
+  localStorage.setItem("cs_theme", STATE.theme);
+  applyTheme();
+};
+applyTheme();
+
+/* ============================================================
+   6. FAVORITES ("My Cricket")
+   ============================================================ */
+function isFavorite(id) { return STATE.favorites.includes(id); }
+function toggleFavorite(id) {
+  if (isFavorite(id)) STATE.favorites = STATE.favorites.filter(f => f !== id);
+  else STATE.favorites.push(id);
+  localStorage.setItem("cs_favorites", JSON.stringify(STATE.favorites));
+  showToast(isFavorite(id) ? "⭐ Favorites mein add ho gaya" : "Favorites se hata diya");
+}
+
+/* ============================================================
+   7. REMINDERS
+   ============================================================ */
+function hasReminder(id) { return STATE.reminders.includes(id); }
+async function toggleReminder(id, match) {
+  if (hasReminder(id)) {
+    STATE.reminders = STATE.reminders.filter(r => r !== id);
+    showToast("Reminder hata diya");
+  } else {
+    STATE.reminders.push(id);
+    showToast("🔔 Reminder set ho gaya");
+    if ("Notification" in window && Notification.permission !== "granted") {
+      try { await Notification.requestPermission(); } catch (e) {}
+    }
+    const msUntil = new Date(match.dateTimeGMT) - new Date();
+    if (msUntil > 0 && msUntil < 2147483647) {
+      setTimeout(() => {
+        const teams = match.teams || ["Team A", "Team B"];
+        const title = `🏏 ${teams[0]} vs ${teams[1]} shuru hone wala hai!`;
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification(title);
+        } else {
+          showToast(title);
+        }
+      }, msUntil);
+    }
+  }
+  localStorage.setItem("cs_reminders", JSON.stringify(STATE.reminders));
+  renderHome();
+}
+
+/* ============================================================
+   8. IN-APP NOTIFICATIONS FROM REAL SCORE DELTAS
+   (never fabricated — only fires when actual API numbers change)
+   ============================================================ */
+function detectEvents(match) {
+  const id = match.id;
+  const prev = STATE.prevScores[id];
+  if (match.score && match.score.length) {
+    const cur = match.score[match.score.length - 1];
+    if (prev) {
+      if (cur.w > prev.w) showToast(`🎯 WICKET! ${(match.teams||["Team"])[match.score.length-1] || ""} ${cur.r}/${cur.w}`);
+      if (cur.r - prev.r >= 6) showToast(`🚀 SIX! ${cur.r}/${cur.w} (${cur.o} ov)`);
+    }
+    STATE.prevScores[id] = cur;
+    sessionStorage.setItem("cs_prevScores", JSON.stringify(STATE.prevScores));
+  }
+}
+
+/* ============================================================
+   9. RENDER — HOME / MATCH CARDS
+   ============================================================ */
+function skeletonLiveCards(n) { return Array(n).fill('<div class="skel skelCard"></div>').join(""); }
+function skeletonLines(n) { return Array(n).fill('<div class="skel skelLine"></div>').join(""); }
+
+function renderCommandCenter() {
+  const live = STATE.matches.filter(m => stateOf(m) === "live").length;
+  const upcoming = STATE.matches.filter(m => stateOf(m) === "upcoming").length;
+  const finished = STATE.matches.filter(m => stateOf(m) === "finished").length;
+  document.getElementById("commandCenter").innerHTML = `
+    <div class="commandTitle">📡 Right Now</div>
+    <div class="commandGrid">
+      <div class="commandItem"><div class="lbl">Live</div><div class="val">🔴 ${live} match(es)</div></div>
+      <div class="commandItem"><div class="lbl">Upcoming</div><div class="val">⏳ ${upcoming} match(es)</div></div>
+      <div class="commandItem"><div class="lbl">Completed</div><div class="val">✅ ${finished} match(es)</div></div>
+      <div class="commandItem"><div class="lbl">Series tracked</div><div class="val">🏆 ${dbGet("series").length}</div></div>
+    </div>
+  `;
+}
+
+function liveCardHtml(m) {
+  const teams = m.teams || ["Team A", "Team B"];
+  return `
+    <div class="card liveCard" onclick="openMatch('${m.id}')">
+      <div class="cardTop">
+        <div class="seriesTag">${esc(m.name)}</div>
+        <div class="statusBadge live"><span class="livePulse"></span>LIVE</div>
+      </div>
+      <div class="teamLine"><div class="teamLeft"><div class="teamBadge">${initials(teams[0])}</div><div class="teamNm">${esc(teams[0])}</div></div><div class="teamSc">${scoreLine(m,0) || "-"}</div></div>
+      <div class="teamLine"><div class="teamLeft"><div class="teamBadge">${initials(teams[1])}</div><div class="teamNm">${esc(teams[1])}</div></div><div class="teamSc">${scoreLine(m,1) || "-"}</div></div>
+      <div class="cardMeta">${esc(m.status || "Match in progress")}</div>
+      <div class="cardFooter"><span class="cta">View Scorecard →</span><span style="font-size:11px; color:var(--text-3); font-weight:600;">${(m.matchType||"").toUpperCase()}</span></div>
+    </div>
+  `;
+}
+function upcomingCardHtml(m) {
+  const teams = m.teams || ["Team A", "Team B"];
+  const reminded = hasReminder(m.id);
+  return `
+    <div class="card">
+      <div class="cardTop">
+        <div class="seriesTag">${esc(m.name)}</div>
+        <div class="statusBadge upcoming">${(m.matchType||"").toUpperCase()}</div>
+      </div>
+      <div style="padding: 4px 16px 10px 16px; font-size:13.5px; font-weight:700;">${esc(teams[0])} <span style="color:var(--text-3); font-weight:400;">vs</span> ${esc(teams[1])}</div>
+      <div class="cardMeta">📅 ${fmtDateTime(m.dateTimeGMT)} &nbsp;•&nbsp; ⏱ ${countdown(m.dateTimeGMT)}</div>
+      <div class="cardFooter">
+        <span class="cta" onclick="event.stopPropagation(); openMatch('${m.id}')">Details →</span>
+        <button class="remindBtn ${reminded ? 'on' : ''}" onclick="event.stopPropagation(); toggleReminder('${m.id}', ${JSON.stringify(m).replace(/"/g, '&quot;')})">🔔 ${reminded ? 'Reminder ON' : 'Remind me'}</button>
+      </div>
+    </div>
+  `;
+}
+function resultCardHtml(m) {
+  const teams = m.teams || ["Team A", "Team B"];
+  return `
+    <div class="card" onclick="openMatch('${m.id}')">
+      <div class="cardTop">
+        <div class="seriesTag">${esc(m.name)}</div>
+        <div class="statusBadge finished">FINAL</div>
+      </div>
+      <div class="teamLine"><div class="teamLeft"><div class="teamBadge">${initials(teams[0])}</div><div class="teamNm">${esc(teams[0])}</div></div><div class="teamSc">${scoreLine(m,0)}</div></div>
+      <div class="teamLine"><div class="teamLeft"><div class="teamBadge">${initials(teams[1])}</div><div class="teamNm">${esc(teams[1])}</div></div><div class="teamSc">${scoreLine(m,1)}</div></div>
+      <div class="cardMeta">🏆 ${esc(m.status || "Match finished")}</div>
+    </div>
+  `;
+}
+
+function renderHome() {
+  renderCommandCenter();
+
+  const live = STATE.matches.filter(m => stateOf(m) === "live");
+  const upcoming = STATE.matches.filter(m => stateOf(m) === "upcoming").sort((a,b) => new Date(a.dateTimeGMT) - new Date(b.dateTimeGMT));
+  const finished = STATE.matches.filter(m => stateOf(m) === "finished");
+
+  document.getElementById("liveCountSub").textContent = live.length ? live.length + " match(es)" : "";
+  document.getElementById("liveScroll").innerHTML = live.length
+    ? live.map(liveCardHtml).join("")
+    : `<div class="stateBox" style="margin:0 16px; padding:20px;"><div class="ic">📭</div><div class="de">Is waqt koi match live nahi hai.</div></div>`;
+
+  document.getElementById("upcomingList").innerHTML = upcoming.length
+    ? upcoming.slice(0, 6).map(upcomingCardHtml).join("")
+    : `<div class="stateBox" style="margin:0; padding:16px;"><div class="de">Koi upcoming match nahi mila.</div></div>`;
+
+  document.getElementById("resultsList").innerHTML = finished.length
+    ? finished.slice(0, 6).map(resultCardHtml).join("")
+    : `<div class="stateBox" style="margin:0; padding:16px;"><div class="de">Koi recent result nahi mila.</div></div>`;
+
+  const pub = dbGet("news").filter(n => n.published).sort((a,b) => (b.date||"").localeCompare(a.date||"")).slice(0,2);
+  document.getElementById("newsTeaser").innerHTML = pub.length
+    ? pub.map(n => `<a class="newsCard" href="javascript:void(0)" onclick="showPage('news')"><div class="ni">📰</div><div style="flex:1;"><div class="nt">${esc(n.title)}</div><div class="ns">${esc(n.category)}</div></div><div class="na">→</div></a>`).join("")
+    : `<div class="stateBox" style="margin:0; padding:14px;"><div class="de">Abhi koi CricScore news nahi hai — Admin panel se add karein.</div></div>`;
+
+  live.forEach(detectEvents);
+}
+
+function renderNews() {
+  const sources = [
+    { icon: "🏏", title: "ESPN Cricinfo", sub: "Latest news, scores, analysis", url: "https://www.espncricinfo.com" },
+    { icon: "🏆", title: "ICC Cricket", sub: "Official tournament updates", url: "https://www.icc-cricket.com/news" },
+    { icon: "📣", title: "Cricbuzz News", sub: "Breaking stories, interviews", url: "https://www.cricbuzz.com/cricket-news" },
+  ];
+  document.getElementById("newsList").innerHTML = sources.map(s => `
+    <a class="newsCard" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">
+      <div class="ni">${s.icon}</div>
+      <div style="flex:1;"><div class="nt">${esc(s.title)}</div><div class="ns">${esc(s.sub)}</div></div>
+      <div class="na">↗</div>
+    </a>
+  `).join("");
+}
+renderNews();
+
+/* ============================================================
+   10. RENDER — MATCH DETAIL SHEET
+   ============================================================ */
+function findMatch(id) { return STATE.matches.find(m => m.id === id); }
+
+async function openMatch(id) {
+  const m = findMatch(id);
+  if (!m) return;
+  STATE.currentMatchId = id;
+  const teams = m.teams || ["Team A", "Team B"];
+  const st = stateOf(m);
+
+  closeGenericSheet();
+  document.getElementById("matchSheet").style.display = "block";
+  document.getElementById("sheetMeta").textContent = `${(m.matchType||"").toUpperCase()} • ${fmtDateTime(m.dateTimeGMT)}`;
+  document.getElementById("sheetTitle").textContent = m.name || "Match";
+  document.getElementById("sheetFavBtn").textContent = isFavorite(id) ? "★" : "☆";
+  document.getElementById("sheetFavBtn").onclick = () => { toggleFavorite(id); document.getElementById("sheetFavBtn").textContent = isFavorite(id) ? "★" : "☆"; };
+  document.getElementById("sheetShareBtn").onclick = () => {
+    const text = `${teams[0]} vs ${teams[1]} — ${scoreLine(m,0)} ${scoreLine(m,1)}`.trim();
+    if (navigator.share) navigator.share({ title: m.name, text }).catch(()=>{});
+    else { navigator.clipboard && navigator.clipboard.writeText(text); showToast("Score copy ho gaya"); }
+  };
+
+  document.getElementById("sheetScoreboard").innerHTML = `
+    <div class="sbTeam"><div class="sbBadge">${initials(teams[0])}</div><div class="sbName">${esc(teams[0])}</div><div class="sbScore">${scoreLine(m,0) || "-"}</div></div>
+    <div class="sbVs">VS</div>
+    <div class="sbTeam"><div class="sbBadge">${initials(teams[1])}</div><div class="sbName">${esc(teams[1])}</div><div class="sbScore">${scoreLine(m,1) || "-"}</div></div>
+  `;
+  document.getElementById("sheetStatus").textContent = m.status || (st === "upcoming" ? "Match hasn't started" : "");
+
+  setSheetTab("summary");
+  document.getElementById("tab-summary").innerHTML = `<div class="skel skelLine"></div><div class="skel skelLine" style="margin-top:10px;"></div>`;
+  document.getElementById("tab-scorecard").innerHTML = skeletonLines(3);
+  document.getElementById("tab-info").innerHTML = skeletonLines(2);
+  document.getElementById("tab-commentary").innerHTML = `<div class="unavailBox">⏳ Loading...</div>`;
+  document.getElementById("tab-stats").innerHTML = `<div class="unavailBox">⏳ Loading...</div>`;
+  document.getElementById("tab-squads").innerHTML = `<div class="unavailBox">⏳ Loading...</div>`;
+
+  try {
+    const [infoData, scoreData] = await Promise.all([
+      CricketAPI.getMatchInfo(id),
+      CricketAPI.getScorecard(id),
+    ]);
+    renderSummaryTab(m, infoData);
+    renderScorecardTab(scoreData);
+    renderInfoTab(m, infoData);
+    renderStatsTab(m);
+    renderCommentaryUnavailable();
+    renderSquadsUnavailable(infoData);
+  } catch (err) {
+    document.getElementById("tab-summary").innerHTML = `<div class="stateBox"><div class="ic">⚠️</div><div class="ti">Data load nahi ho saka</div><div class="de">${esc(err.message)}</div><button class="retryBtn" onclick="openMatch('${id}')">Dobara Try Karein</button></div>`;
+  }
+}
+function closeMatch() { document.getElementById("matchSheet").style.display = "none"; }
+document.getElementById("closeSheetBtn").onclick = closeMatch;
+
+function setSheetTab(tab) {
+  STATE.activeSheetTab = tab;
+  document.querySelectorAll(".tabBtn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll(".tabPanel").forEach(p => p.classList.toggle("active", p.id === "tab-" + tab));
+}
+document.querySelectorAll(".tabBtn").forEach(b => b.onclick = () => setSheetTab(b.dataset.tab));
+
+function renderSummaryTab(m, infoData) {
+  const teams = m.teams || ["Team A","Team B"];
+  const d = (infoData && infoData.status === "success") ? infoData.data : null;
+  let html = `<div class="infoRow"><div class="k">Status</div><div class="v">${esc(m.status || "-")}</div></div>`;
+  if (d && d.toss && d.toss.winner) html += `<div class="infoRow"><div class="k">Toss</div><div class="v">🪙 ${esc(d.toss.winner)} chose to ${esc(d.toss.decision || "-")}</div></div>`;
+  if (d && d.venue) html += `<div class="infoRow"><div class="k">Venue</div><div class="v">📍 ${esc(d.venue)}</div></div>`;
+  if (m.score && m.score.length) {
+    m.score.forEach((s, i) => {
+      const rr = runRate(m, i);
+      if (rr) html += `<div class="infoRow"><div class="k">${esc(teams[i]||("Innings "+(i+1)))} Run Rate</div><div class="v">${rr}</div></div>`;
+    });
+  }
+  document.getElementById("tab-summary").innerHTML = html;
+}
+
+function renderScorecardTab(data) {
+  const el = document.getElementById("tab-scorecard");
+  if (!data || data.status !== "success" || !data.scorecard || data.scorecard.length === 0) {
+    el.innerHTML = `<div class="unavailBox">📋 Scorecard abhi available nahi hai${data && data.reason ? " ("+esc(data.reason)+")" : ""}.</div>`;
+    return;
+  }
+  let html = "";
+  data.scorecard.forEach(inn => {
+    html += `<div class="inningsTitle">🏏 ${esc(inn.inning || "")}</div>`;
+    if (inn.batting && inn.batting.length) {
+      html += `<div class="tableWrap"><table class="scTable"><tr><th>Batsman</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th></tr>`;
+      inn.batting.forEach(b => {
+        const v = x => (x !== undefined && x !== null) ? x : "-";
+        const notOut = b.dismissal === "" || b.dismissal === "not out";
+        html += `<tr class="${notOut ? 'notOut' : ''}"><td>${esc(b.batsman ? b.batsman.name : "-")}${notOut ? " *" : ""}</td><td>${v(b.r)}</td><td>${v(b.b)}</td><td>${v(b["4s"])}</td><td>${v(b["6s"])}</td><td>${v(b.sr)}</td></tr>`;
+      });
+      html += `</table></div>`;
+    }
+    if (inn.bowling && inn.bowling.length) {
+      html += `<div class="tableWrap"><table class="scTable"><tr><th>Bowler</th><th>O</th><th>M</th><th>R</th><th>W</th><th>Econ</th></tr>`;
+      inn.bowling.forEach(bw => {
+        const v = x => (x !== undefined && x !== null) ? x : "-";
+        html += `<tr><td>${esc(bw.bowler ? bw.bowler.name : "-")}</td><td>${v(bw.o)}</td><td>${v(bw.m)}</td><td>${v(bw.r)}</td><td>${v(bw.w)}</td><td>${v(bw.eco)}</td></tr>`;
+      });
+      html += `</table></div>`;
+    }
+  });
+  el.innerHTML = html;
+}
+
+function renderInfoTab(m, infoData) {
+  const d = (infoData && infoData.status === "success") ? infoData.data : null;
+  let html = `<div class="infoRow"><div class="k">Format</div><div class="v">${esc((m.matchType||"-").toUpperCase())}</div></div>`;
+  html += `<div class="infoRow"><div class="k">Date</div><div class="v">${fmtDateTime(m.dateTimeGMT) || "-"}</div></div>`;
+  if (d && d.venue) html += `<div class="infoRow"><div class="k">Venue</div><div class="v">${esc(d.venue)}</div></div>`;
+  if (d && d.umpires) html += `<div class="infoRow"><div class="k">Umpires</div><div class="v">${esc(d.umpires)}</div></div>`;
+  if (d && d.referee) html += `<div class="infoRow"><div class="k">Referee</div><div class="v">${esc(d.referee)}</div></div>`;
+  document.getElementById("tab-info").innerHTML = html;
+}
+
+function renderStatsTab(m) {
+  const teams = m.teams || ["Team A","Team B"];
+  let html = "";
+  let any = false;
+  if (m.score && m.score.length) {
+    m.score.forEach((s, i) => {
+      const rr = runRate(m, i);
+      if (rr) { any = true; html += `<div class="infoRow"><div class="k">${esc(teams[i])} Run Rate</div><div class="v">${rr}</div></div>`; }
+    });
+  }
+  if (!any) {
+    html = `<div class="unavailBox">📊 Detailed stats (required run rate, partnerships, momentum) is match ke liye available nahi hain — free API plan sirf overall score deta hai.</div>`;
+  }
+  document.getElementById("tab-stats").innerHTML = html;
+}
+function renderCommentaryUnavailable() {
+  document.getElementById("tab-commentary").innerHTML = `<div class="unavailBox">🎙️ Ball-by-ball commentary data provider ke paid (Fantasy) tier mein aati hai.<br>Ye free version mein available nahi hai.</div>`;
+}
+function renderSquadsUnavailable(infoData) {
+  document.getElementById("tab-squads").innerHTML = `<div class="unavailBox">👥 Full squad lists is API plan mein available nahi hain.<br>Sirf batting/bowling scorecard ke players scorecard tab mein dikhte hain.<br><br>CricScore ke apne Teams/Players section mein squads Admin panel se manage ki ja sakti hain.</div>`;
+}
+
+/* ============================================================
+   11. SEARCH (matches + teams + players + news)
+   ============================================================ */
+document.getElementById("searchBtn").onclick = () => {
+  document.getElementById("searchOverlay").style.display = "block";
+  document.getElementById("searchInput").focus();
+};
+document.getElementById("closeSearchBtn").onclick = () => { document.getElementById("searchOverlay").style.display = "none"; };
+let searchDebounce = null;
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  clearTimeout(searchDebounce);
+  const q = e.target.value.trim().toLowerCase();
+  searchDebounce = setTimeout(() => { renderSearchResults(q); }, 250);
+});
+function renderSearchResults(q) {
+  const results = document.getElementById("searchResults");
+  if (q.length < 2) { results.innerHTML = ""; return; }
+
+  const matches = STATE.matches.filter(m =>
+    (m.name && m.name.toLowerCase().includes(q)) ||
+    (m.teams && m.teams.some(t => t.toLowerCase().includes(q)))
+  ).slice(0, 6);
+  const teams = dbGet("teams").filter(t => (t.name||"").toLowerCase().includes(q)).slice(0, 6);
+  const players = dbGet("players").filter(p => (p.name||"").toLowerCase().includes(q)).slice(0, 6);
+  const news = dbGet("news").filter(n => n.published && (n.title||"").toLowerCase().includes(q)).slice(0, 6);
+
+  let html = "";
+  if (matches.length) {
+    html += `<div class="searchGroupLabel">Matches</div><div class="vList">` + matches.map(m => {
+      const st = stateOf(m);
+      return `<div class="card" onclick="document.getElementById('searchOverlay').style.display='none'; openMatch('${m.id}')" style="padding:13px 15px; cursor:pointer;">
+        <div style="font-size:12px; color:var(--text-3); margin-bottom:4px;">${esc(m.name)}</div>
+        <div style="font-size:14px; font-weight:700;">${esc((m.teams||["-","-"])[0])} vs ${esc((m.teams||["-","-"])[1])}</div>
+        <div style="font-size:11px; color:var(--text-3); margin-top:3px;">${st.toUpperCase()}</div>
+      </div>`;
+    }).join("") + `</div>`;
+  }
+  if (teams.length) {
+    html += `<div class="searchGroupLabel">Teams</div><div class="vList">` + teams.map(t => `
+      <div class="rowCard" onclick="document.getElementById('searchOverlay').style.display='none'; openTeamDetail('${t.id}')" style="cursor:pointer;">
+        <div class="avatar">${initials(t.name)}</div>
+        <div class="info"><div class="nm">${esc(t.name)}</div><div class="sub">${esc(t.country||"")}</div></div>
+      </div>`).join("") + `</div>`;
+  }
+  if (players.length) {
+    html += `<div class="searchGroupLabel">Players</div><div class="vList">` + players.map(p => `
+      <div class="rowCard" onclick="document.getElementById('searchOverlay').style.display='none'; openPlayerDetail('${p.id}')" style="cursor:pointer;">
+        <div class="avatar">${initials(p.name)}</div>
+        <div class="info"><div class="nm">${esc(p.name)}</div><div class="sub">${esc(p.country||"")} • ${esc(p.role||"")}</div></div>
+      </div>`).join("") + `</div>`;
+  }
+  if (news.length) {
+    html += `<div class="searchGroupLabel">News</div><div class="vList">` + news.map(n => `
+      <div class="rowCard" onclick="document.getElementById('searchOverlay').style.display='none'; showPage('news')" style="cursor:pointer;">
+        <div class="avatar">📰</div>
+        <div class="info"><div class="nm">${esc(n.title)}</div><div class="sub">${esc(n.category||"")}</div></div>
+      </div>`).join("") + `</div>`;
+  }
+  results.innerHTML = html || `<div class="stateBox"><div class="de">Koi result nahi mila "${esc(q)}" ke liye.</div></div>`;
+}
+
+/* ============================================================
+   12. NAVIGATION — top nav, bottom nav, menu overlay, router
+   ============================================================ */
+const NAV_ITEMS = [
+  { id: "home", label: "Home", icon: "🏠" },
+  { id: "matches", label: "Matches", icon: "🏏" },
+  { id: "series", label: "Series", icon: "🏆" },
+  { id: "teams", label: "Teams", icon: "🛡️" },
+  { id: "players", label: "Players", icon: "🧑‍🤝‍🧑" },
+  { id: "rankings", label: "Rankings", icon: "📈" },
+  { id: "stats", label: "Stats", icon: "📊" },
+  { id: "records", label: "Records", icon: "📜" },
+  { id: "venues", label: "Venues", icon: "🏟️" },
+  { id: "news", label: "News", icon: "📰" },
+];
+
+function buildTopNav() {
+  document.getElementById("topNav").innerHTML = NAV_ITEMS.map(n =>
+    `<button class="topNavBtn" data-page="${n.id}" onclick="showPage('${n.id}')">${n.label}</button>`
+  ).join("");
+}
+buildTopNav();
+
+function buildMenuGrid() {
+  const tiles = NAV_ITEMS.map(n => `
+    <div class="menuTile" onclick="showPage('${n.id}')">
+      <div class="ic">${n.icon}</div><div class="lb">${n.label}</div>
+    </div>`).join("");
+  document.getElementById("menuGrid").innerHTML = tiles + `
+    <div class="menuTile menuAdminTile" onclick="showPage('admin')" style="grid-column:1/-1;">
+      <div class="ic">⚙️</div><div class="lb">Admin Panel</div>
+    </div>`;
+}
+buildMenuGrid();
+
+document.getElementById("brandLogo").onclick = () => showPage("home");
+document.getElementById("menuBtn").onclick = () => { document.getElementById("menuOverlay").style.display = "block"; };
+document.getElementById("closeMenuBtn").onclick = () => { document.getElementById("menuOverlay").style.display = "none"; };
+
+function syncNavActive(id) {
+  document.querySelectorAll(".topNavBtn").forEach(b => b.classList.toggle("active", b.dataset.page === id));
+  const bottomMap = { home: "home", matches: "matches", live: "matches", series: "series", stats: "stats" };
+  document.querySelectorAll(".navItem").forEach(b => {
+    const tab = b.dataset.tab;
+    const isActive = (tab === "home" && id === "home") || (tab === "matches" && id === "matches") ||
+                      (tab === "series" && id === "series") || (tab === "stats" && id === "stats");
+    b.classList.toggle("active", isActive);
+  });
+}
+
+function showPage(id) {
+  document.querySelectorAll(".pageContainer").forEach(p => p.style.display = "none");
+  document.getElementById("mainArea").style.display = id === "home" ? "block" : "none";
+  const el = document.getElementById("page-" + id);
+  if (el) el.style.display = "block";
+  document.getElementById("menuOverlay").style.display = "none";
+  document.getElementById("searchOverlay").style.display = "none";
+  closeMatch();
+  closeGenericSheet();
+  window.scrollTo(0, 0);
+  STATE.activePage = id;
+  syncNavActive(id);
+
+  if (id === "matches") renderMatchesPage();
+  if (id === "series") renderSeriesPage();
+  if (id === "teams") renderTeamsPage();
+  if (id === "players") renderPlayersPage();
+  if (id === "rankings") renderRankingsPage();
+  if (id === "stats") renderStatsPage();
+  if (id === "records") renderRecordsPage();
+  if (id === "venues") renderVenuesPage();
+  if (id === "news") renderNewsPage();
+  if (id === "admin") renderAdminEntry();
+}
+
+document.querySelectorAll(".navItem").forEach(btn => {
+  btn.onclick = () => {
+    const tab = btn.dataset.tab;
+    if (tab === "more") { document.getElementById("menuOverlay").style.display = "block"; return; }
+    showPage(tab);
+  };
+});
+
+/* ============================================================
+   13. MATCHES PAGE
+   ============================================================ */
+function renderMatchesPage() {
+  const chips = [
+    { id: "all", label: "All" }, { id: "live", label: "🔴 Live" },
+    { id: "upcoming", label: "⏳ Upcoming" }, { id: "finished", label: "✅ Completed" },
+  ];
+  document.getElementById("matchesFilterChips").innerHTML = chips.map(c =>
+    `<button class="chip ${STATE.matchesFilter === c.id ? 'active' : ''}" onclick="STATE.matchesFilter='${c.id}'; renderMatchesPage();">${c.label}</button>`
+  ).join("");
+
+  let list = STATE.matches.slice();
+  if (STATE.matchesFilter !== "all") list = list.filter(m => stateOf(m) === STATE.matchesFilter);
+  list.sort((a, b) => new Date(b.dateTimeGMT || 0) - new Date(a.dateTimeGMT || 0));
+
+  const el = document.getElementById("matchesList");
+  if (!list.length) { el.innerHTML = `<div class="stateBox"><div class="ic">📭</div><div class="de">Is filter ke liye koi match nahi mila.</div></div>`; return; }
+  el.innerHTML = list.map(m => {
+    const st = stateOf(m);
+    if (st === "live") return liveCardHtmlFull(m);
+    if (st === "upcoming") return upcomingCardHtml(m);
+    return resultCardHtml(m);
+  }).join("");
+}
+function liveCardHtmlFull(m) {
+  const teams = m.teams || ["Team A", "Team B"];
+  return `
+    <div class="card" onclick="openMatch('${m.id}')">
+      <div class="cardTop"><div class="seriesTag">${esc(m.name)}</div><div class="statusBadge live"><span class="livePulse"></span>LIVE</div></div>
+      <div class="teamLine"><div class="teamLeft"><div class="teamBadge">${initials(teams[0])}</div><div class="teamNm">${esc(teams[0])}</div></div><div class="teamSc">${scoreLine(m,0) || "-"}</div></div>
+      <div class="teamLine"><div class="teamLeft"><div class="teamBadge">${initials(teams[1])}</div><div class="teamNm">${esc(teams[1])}</div></div><div class="teamSc">${scoreLine(m,1) || "-"}</div></div>
+      <div class="cardMeta">${esc(m.status || "Match in progress")}</div>
+    </div>`;
+}
+
+/* ============================================================
+   14. GENERIC DETAIL SHEET (Team / Player / Series / Venue)
+   ============================================================ */
+function closeGenericSheet() { document.getElementById("genericSheet").style.display = "none"; }
+document.getElementById("closeGenericBtn").onclick = closeGenericSheet;
+function openGenericSheet(meta, title, bodyHtml) {
+  closeMatch();
+  document.getElementById("genericMeta").textContent = meta;
+  document.getElementById("genericTitle").textContent = title;
+  document.getElementById("genericBody").innerHTML = bodyHtml;
+  document.getElementById("genericSheet").style.display = "block";
+}
+
+/* ============================================================
+   15. SERIES PAGE
+   ============================================================ */
+function renderSeriesPage() {
+  const list = dbGet("series").sort((a,b) => (a.startDate||"").localeCompare(b.startDate||""));
+  const el = document.getElementById("seriesList");
+  if (!list.length) { el.innerHTML = `<div class="stateBox"><div class="ic">🏆</div><div class="ti">Koi series nahi hai</div><div class="de">Admin panel se series add karein.</div></div>`; return; }
+  el.innerHTML = list.map(s => {
+    const badgeClass = s.status === "Ongoing" ? "live" : (s.status === "Upcoming" ? "upcoming" : "finished");
+    return `
+    <div class="card seriesCard" onclick="openSeriesDetail('${s.id}')">
+      <div class="nm">🏆 ${esc(s.name)}</div>
+      <div class="meta">${esc(s.format||"")} • ${esc(s.startDate||"")} → ${esc(s.endDate||"")}</div>
+      <div class="statusRow"><span class="statusBadge ${badgeClass}">${esc((s.status||"").toUpperCase())}</span></div>
+    </div>`;
+  }).join("");
+}
+function openSeriesDetail(id) {
+  const s = dbGet("series").find(x => x.id === id);
+  if (!s) return;
+  const pts = dbGet("points").filter(p => p.seriesId === id);
+  const linked = STATE.matches.filter(m => (m.name||"").toLowerCase().includes((s.name||"").split(" ")[0].toLowerCase()));
+
+  let body = `<div class="infoRow"><div class="k">Format</div><div class="v">${esc(s.format||"-")}</div></div>`;
+  body += `<div class="infoRow"><div class="k">Dates</div><div class="v">${esc(s.startDate||"-")} → ${esc(s.endDate||"-")}</div></div>`;
+  body += `<div class="infoRow"><div class="k">Status</div><div class="v">${esc(s.status||"-")}</div></div>`;
+
+  if (pts.length) {
+    body += `<div class="inningsTitle" style="margin-top:18px;">📊 Points Table</div>
+      <div class="tableWrap"><table class="scTable"><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr>` +
+      pts.sort((a,b)=>b.points-a.points).map(r => `<tr><td>${esc(r.team)}</td><td>${r.played}</td><td>${r.won}</td><td>${r.lost}</td><td><b>${r.points}</b></td><td>${esc(r.nrr)}</td></tr>`).join("") +
+      `</table></div>`;
+  } else {
+    body += `<div class="unavailBox">📊 Points table abhi set nahi hui — Admin panel se add karein.</div>`;
+  }
+
+  body += `<div class="inningsTitle" style="margin-top:18px;">🏏 Linked Live Matches</div>`;
+  body += linked.length
+    ? `<div class="vList" style="padding:0;">` + linked.map(m => stateOf(m)==="live" ? liveCardHtmlFull(m) : (stateOf(m)==="upcoming" ? upcomingCardHtml(m) : resultCardHtml(m))).join("") + `</div>`
+    : `<div class="unavailBox">Is series ke naam se abhi koi live-API match nahi mila.</div>`;
+
+  openGenericSheet("SERIES", s.name, body);
+}
+
+/* ============================================================
+   16. TEAMS PAGE
+   ============================================================ */
+function renderTeamsPage() {
+  const list = dbGet("teams");
+  const el = document.getElementById("teamsGrid");
+  if (!list.length) { el.innerHTML = `<div class="stateBox" style="grid-column:1/-1;"><div class="ic">🛡️</div><div class="ti">Koi team nahi hai</div><div class="de">Admin panel se team add karein.</div></div>`; return; }
+  el.innerHTML = list.map(t => `
+    <div class="entityCard" onclick="openTeamDetail('${t.id}')" style="cursor:pointer;">
+      <div class="avatar">${initials(t.name)}</div>
+      <div class="nm">${esc(t.name)}</div>
+      <div class="sub">${esc(t.shortName||"")}</div>
+    </div>`).join("");
+}
+function openTeamDetail(id) {
+  const t = dbGet("teams").find(x => x.id === id);
+  if (!t) return;
+  const squad = dbGet("players").filter(p => p.teamId === id);
+  const linked = STATE.matches.filter(m => (m.teams||[]).some(tn => tn.toLowerCase().includes((t.name||"").toLowerCase())));
+
+  let body = `<div class="infoRow"><div class="k">Country</div><div class="v">${esc(t.country||"-")}</div></div>`;
+  body += `<div class="infoRow"><div class="k">Captain</div><div class="v">${esc(t.captain||"-")}</div></div>`;
+  body += `<div class="infoRow"><div class="k">Coach</div><div class="v">${esc(t.coach||"-")}</div></div>`;
+
+  body += `<div class="inningsTitle" style="margin-top:18px;">🧑‍🤝‍🧑 Squad (${squad.length})</div>`;
+  body += squad.length
+    ? `<div class="vList" style="padding:0;">` + squad.map(p => `
+        <div class="rowCard" onclick="openPlayerDetail('${p.id}')" style="cursor:pointer;">
+          <div class="avatar">${initials(p.name)}</div>
+          <div class="info"><div class="nm">${esc(p.name)}</div><div class="sub">${esc(p.role||"")}</div></div>
+        </div>`).join("") + `</div>`
+    : `<div class="unavailBox">Squad abhi Admin panel se add nahi hui.</div>`;
+
+  body += `<div class="inningsTitle" style="margin-top:18px;">🏏 Recent / Live Matches</div>`;
+  body += linked.length
+    ? `<div class="vList" style="padding:0;">` + linked.slice(0,5).map(m => stateOf(m)==="live" ? liveCardHtmlFull(m) : (stateOf(m)==="upcoming" ? upcomingCardHtml(m) : resultCardHtml(m))).join("") + `</div>`
+    : `<div class="unavailBox">Is team ka naam abhi live-API matches mein nahi mila.</div>`;
+
+  openGenericSheet("TEAM", t.name, body);
+}
+
+/* ============================================================
+   17. PLAYERS PAGE
+   ============================================================ */
+function renderPlayersPage(q) {
+  q = (q || "").toLowerCase();
+  const teams = dbGet("teams");
+  const teamName = tid => (teams.find(t => t.id === tid) || {}).name || "Free agent";
+  let list = dbGet("players");
+  if (q) list = list.filter(p => (p.name||"").toLowerCase().includes(q));
+  const el = document.getElementById("playersList");
+  if (!list.length) { el.innerHTML = `<div class="stateBox"><div class="ic">🧑‍🤝‍🧑</div><div class="ti">Koi player nahi mila</div><div class="de">Admin panel se players add karein.</div></div>`; return; }
+  el.innerHTML = list.map(p => `
+    <div class="rowCard" onclick="openPlayerDetail('${p.id}')" style="cursor:pointer;">
+      <div class="avatar">${initials(p.name)}</div>
+      <div class="info"><div class="nm">${esc(p.name)}</div><div class="sub">${esc(p.country||"")} • ${esc(p.role||"")} • ${esc(teamName(p.teamId))}</div></div>
+      <div class="rt">${p.runs||0} runs</div>
+    </div>`).join("");
+}
+document.getElementById("playersSearchInput").addEventListener("input", (e) => renderPlayersPage(e.target.value));
+
+function openPlayerDetail(id) {
+  const p = dbGet("players").find(x => x.id === id);
+  if (!p) return;
+  const teams = dbGet("teams");
+  const teamName = (teams.find(t => t.id === p.teamId) || {}).name || "-";
+
+  let body = `<div class="infoRow"><div class="k">Full Name</div><div class="v">${esc(p.fullName||p.name)}</div></div>`;
+  body += `<div class="infoRow"><div class="k">Country</div><div class="v">${esc(p.country||"-")}</div></div>`;
+  body += `<div class="infoRow"><div class="k">Role</div><div class="v">${esc(p.role||"-")}</div></div>`;
+  body += `<div class="infoRow"><div class="k">Team</div><div class="v">${esc(teamName)}</div></div>`;
+  body += `<div class="infoRow"><div class="k">Batting Style</div><div class="v">${esc(p.battingStyle||"-")}</div></div>`;
+  body += `<div class="infoRow"><div class="k">Bowling Style</div><div class="v">${esc(p.bowlingStyle||"-")}</div></div>`;
+
+  body += `<div class="inningsTitle" style="margin-top:18px;">📊 Career Statistics</div>`;
+  body += `<div class="tableWrap"><table class="scTable">
+    <tr><th>Matches</th><th>Runs</th><th>Wickets</th><th>Average</th><th>Strike Rate</th></tr>
+    <tr><td>${p.matches||0}</td><td>${p.runs||0}</td><td>${p.wickets||0}</td><td>${p.average||0}</td><td>${p.strikeRate||0}</td></tr>
+  </table></div>`;
+
+  openGenericSheet("PLAYER", p.name, body);
+}
+
+/* ============================================================
+   18. RANKINGS PAGE
+   ============================================================ */
+function renderRankingsPage() {
+  const formats = ["Test", "ODI", "T20I"];
+  const cats = ["Batting", "Bowling", "All-rounder"];
+  document.getElementById("rankFormatChips").innerHTML = formats.map(f =>
+    `<button class="chip ${STATE.rankFormat===f?'active':''}" onclick="STATE.rankFormat='${f}'; renderRankingsPage();">${f}</button>`).join("");
+  document.getElementById("rankCatChips").innerHTML = cats.map(c =>
+    `<button class="chip ${STATE.rankCat===c?'active':''}" onclick="STATE.rankCat='${c}'; renderRankingsPage();">${c}</button>`).join("");
+
+  const list = dbGet("rankings")
+    .filter(r => r.format === STATE.rankFormat && r.category === STATE.rankCat)
+    .sort((a,b) => a.rank - b.rank);
+
+  const el = document.getElementById("rankingsList");
+  el.innerHTML = list.length
+    ? list.map(r => `
+      <div class="rowCard">
+        <div class="avatar">#${r.rank}</div>
+        <div class="info"><div class="nm">${esc(r.playerName)}</div><div class="sub">${esc(r.country||"")}</div></div>
+        <div class="rt">${r.rating||0} pts</div>
+      </div>`).join("")
+    : `<div class="stateBox"><div class="de">${esc(STATE.rankCat)} • ${esc(STATE.rankFormat)} ke liye abhi rankings set nahi — Admin panel se add karein.</div></div>`;
+}
+
+/* ============================================================
+   19. STATS PAGE (leaderboards computed from local player DB)
+   ============================================================ */
+function renderStatsPage() {
+  const players = dbGet("players");
+  const topRuns = players.slice().sort((a,b) => (b.runs||0) - (a.runs||0)).slice(0, 5);
+  const topWickets = players.slice().sort((a,b) => (b.wickets||0) - (a.wickets||0)).slice(0, 5);
+  const topAvg = players.filter(p => (p.matches||0) > 0).sort((a,b) => (b.average||0) - (a.average||0)).slice(0, 5);
+  const topSR = players.filter(p => (p.matches||0) > 0).sort((a,b) => (b.strikeRate||0) - (a.strikeRate||0)).slice(0, 5);
+
+  function block(title, list, valKey, suffix) {
+    if (!list.length) return "";
+    return `<div class="sectionTitle"><span>${title}</span></div><div class="vList">` +
+      list.map((p,i) => `
+        <div class="rowCard">
+          <div class="avatar">${i+1}</div>
+          <div class="info"><div class="nm">${esc(p.name)}</div><div class="sub">${esc(p.country||"")}</div></div>
+          <div class="rt">${p[valKey]||0}${suffix||""}</div>
+        </div>`).join("") + `</div>`;
+  }
+
+  const html = block("🏏 Most Runs", topRuns, "runs") +
+               block("🎯 Most Wickets", topWickets, "wickets") +
+               block("📈 Best Average", topAvg, "average") +
+               block("⚡ Best Strike Rate", topSR, "strikeRate");
+
+  document.getElementById("statsContent").innerHTML = html ||
+    `<div class="stateBox"><div class="ic">📊</div><div class="ti">Koi player data nahi</div><div class="de">Admin panel se players add karein, stats yahan khud ban jayenge.</div></div>`;
+}
+
+/* ============================================================
+   20. RECORDS PAGE
+   ============================================================ */
+function renderRecordsPage() {
+  const list = dbGet("records");
+  const el = document.getElementById("recordsContent");
+  if (!list.length) { el.innerHTML = `<div class="stateBox"><div class="ic">📜</div><div class="ti">Koi record nahi hai</div><div class="de">Admin panel se records add karein.</div></div>`; return; }
+  const grouped = {};
+  list.forEach(r => { (grouped[r.format || "Overall"] = grouped[r.format || "Overall"] || []).push(r); });
+  let html = "";
+  Object.keys(grouped).forEach(fmt => {
+    html += `<div class="sectionTitle"><span>${esc(fmt)}</span></div><div class="vList">` +
+      grouped[fmt].map(r => `
+        <div class="card recordCard">
+          <div class="ttl">${esc(r.title)}</div>
+          <div class="val">${esc(r.value)}</div>
+          <div class="hold">👤 ${esc(r.holder)}</div>
+        </div>`).join("") + `</div>`;
+  });
+  el.innerHTML = html;
+}
+
+/* ============================================================
+   21. VENUES PAGE
+   ============================================================ */
+function renderVenuesPage() {
+  const list = dbGet("venues");
+  const el = document.getElementById("venuesGrid");
+  if (!list.length) { el.innerHTML = `<div class="stateBox" style="grid-column:1/-1;"><div class="ic">🏟️</div><div class="ti">Koi venue nahi hai</div><div class="de">Admin panel se venue add karein.</div></div>`; return; }
+  el.innerHTML = list.map(v => `
+    <div class="entityCard" onclick="openVenueDetail('${v.id}')" style="cursor:pointer;">
+      <div class="avatar">🏟️</div>
+      <div class="nm">${esc(v.name)}</div>
+      <div class="sub">${esc(v.city||"")}</div>
+    </div>`).join("");
+}
+function openVenueDetail(id) {
+  const v = dbGet("venues").find(x => x.id === id);
+  if (!v) return;
+  let body = `<div class="infoRow"><div class="k">City</div><div class="v">${esc(v.city||"-")}</div></div>`;
+  body += `<div class="infoRow"><div class="k">Country</div><div class="v">${esc(v.country||"-")}</div></div>`;
+  body += `<div class="infoRow"><div class="k">Capacity</div><div class="v">${v.capacity ? v.capacity.toLocaleString() : "-"}</div></div>`;
+  body += `<div class="unavailBox" style="margin-top:16px;">🏟️ Match history for this venue needs an upgraded cricket-data API plan connected — architecture is ready for it (see CricketAPI stubs in code).</div>`;
+  openGenericSheet("VENUE", v.name, body);
+}
+
+/* ============================================================
+   22. NEWS PAGE (admin-managed + external)
+   ============================================================ */
+function renderNewsPage() {
+  const cats = ["All", "Breaking News", "Match Report", "Team News", "Player News", "Series News", "Pakistan Cricket", "International Cricket"];
+  document.getElementById("newsCatChips").innerHTML = cats.map(c =>
+    `<button class="chip ${STATE.newsCat===c?'active':''}" onclick="STATE.newsCat='${c}'; renderNewsPage();">${c}</button>`).join("");
+
+  let list = dbGet("news").filter(n => n.published);
+  if (STATE.newsCat !== "All") list = list.filter(n => n.category === STATE.newsCat);
+  list.sort((a,b) => (b.date||"").localeCompare(a.date||""));
+
+  document.getElementById("newsFullList").innerHTML = list.length
+    ? list.map(n => `
+      <div class="card newsAdminCard">
+        <div class="cat">${esc(n.category||"News")}</div>
+        <div class="ttl">${esc(n.title)}</div>
+        <div class="smry">${esc(n.summary||"")}</div>
+        <div class="dt">🗓️ ${esc(n.date||"")}</div>
+      </div>`).join("")
+    : `<div class="stateBox"><div class="de">Is category mein abhi koi news nahi.</div></div>`;
+}
+
+
+/* ============================================================
+   23. ADMIN — auth
+   ============================================================ */
+const ADMIN_PASS_KEY = "cs_admin_pass_hash";
+const ADMIN_SESSION_KEY = "cs_admin_authed";
+
+async function sha256(str) {
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+function hasAdminPassword() { return !!localStorage.getItem(ADMIN_PASS_KEY); }
+function isAdminAuthed() { return sessionStorage.getItem(ADMIN_SESSION_KEY) === "1"; }
+function adminLogout() { sessionStorage.removeItem(ADMIN_SESSION_KEY); renderAdminEntry(); }
+
+const ADMIN_STATE = { activeEntity: "teams" };
+
+function renderAdminEntry() {
+  const root = document.getElementById("adminRoot");
+  if (!hasAdminPassword()) { renderAdminSetPassword(root); return; }
+  if (!isAdminAuthed()) { renderAdminLogin(root); return; }
+  renderAdminDashboard(root);
+}
+
+function renderAdminSetPassword(root) {
+  root.innerHTML = `
+    <div class="pageHead"><h1>⚙️ Admin Panel</h1><p>Pehli baar setup — apna password banayein</p></div>
+    <div class="adminLoginWrap">
+      <div class="ic">🔐</div>
+      <h2>Admin Password Set Karein</h2>
+      <p>Ye password sirf is browser mein save hota hai (client-side). Isse aap Teams, Players, Series, Rankings, News, Records aur Venues manage kar sakenge.</p>
+      <div class="formField"><label>New Password</label><input type="password" id="apwNew" placeholder="Kam se kam 4 characters"></div>
+      <div class="formField"><label>Confirm Password</label><input type="password" id="apwConfirm"></div>
+      <button class="btnPrimary" id="apwSaveBtn">Password Set Karein</button>
+    </div>
+    <div class="securityNote">⚠️ <b>Security note:</b> Ye password sirf aapke is phone/browser ke andar (localStorage) save hota hai — kisi server par nahi. Agar aap ye site kisi aur ke saamne kholenge to wo bhi is Admin panel tak pahunch sakta hai agar unhe password pata ho. Real production site ke liye asli backend authentication zaroori hai.</div>
+  `;
+  document.getElementById("apwSaveBtn").onclick = async () => {
+    const p1 = document.getElementById("apwNew").value;
+    const p2 = document.getElementById("apwConfirm").value;
+    if (p1.length < 4) { showToast("Password kam se kam 4 characters ka ho"); return; }
+    if (p1 !== p2) { showToast("Password match nahi ho raha"); return; }
+    localStorage.setItem(ADMIN_PASS_KEY, await sha256(p1));
+    sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
+    showToast("✅ Admin password set ho gaya");
+    renderAdminEntry();
+  };
+}
+
+function renderAdminLogin(root) {
+  root.innerHTML = `
+    <div class="pageHead"><h1>⚙️ Admin Panel</h1><p>Login karein</p></div>
+    <div class="adminLoginWrap">
+      <div class="ic">🔒</div>
+      <h2>Admin Login</h2>
+      <p>Content manage karne ke liye apna password daalein.</p>
+      <div class="formField"><label>Password</label><input type="password" id="alPass" placeholder="Password"></div>
+      <button class="btnPrimary" id="alLoginBtn">Login</button>
+      <div style="margin-top:14px;"><button class="btnGhost" id="alResetBtn">Password bhool gaye? Reset karein</button></div>
+    </div>
+  `;
+  document.getElementById("alLoginBtn").onclick = async () => {
+    const p = document.getElementById("alPass").value;
+    const hash = await sha256(p);
+    if (hash === localStorage.getItem(ADMIN_PASS_KEY)) {
+      sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
+      showToast("✅ Login successful");
+      renderAdminEntry();
+    } else {
+      showToast("❌ Ghalat password");
+    }
+  };
+  document.getElementById("alResetBtn").onclick = () => {
+    if (confirm("Password reset karne se aapko naya password set karna hoga (data khud safe rahega). Continue karein?")) {
+      localStorage.removeItem(ADMIN_PASS_KEY);
+      renderAdminEntry();
+    }
+  };
+}
+
+/* ============================================================
+   24. ADMIN — dashboard (generic CRUD)
+   ============================================================ */
+function renderAdminDashboard(root) {
+  const entities = Object.keys(ENTITY_SCHEMAS);
+  root.innerHTML = `
+    <div class="pageHead"><h1>⚙️ Admin Dashboard</h1><p>CricScore ka content manage karein</p></div>
+    <div class="adminBar">
+      <div class="who">🟢 Logged in</div>
+      <button class="btnGhost" id="adLogoutBtn">Logout</button>
+    </div>
+    <div class="adminTabs" id="adminTabsRow">
+      ${entities.map(k => `<button class="adminTabBtn ${ADMIN_STATE.activeEntity===k?'active':''}" data-e="${k}">${ENTITY_SCHEMAS[k].icon} ${ENTITY_SCHEMAS[k].label}</button>`).join("")}
+    </div>
+    <div id="adminListWrap" class="vList" style="margin-bottom:16px;"></div>
+    <div class="addFab"><button class="btnPrimary" id="adminAddBtn">+ Add New</button></div>
+    <div class="securityNote">⚠️ Ye Admin panel client-side hai — sirf is browser mein data save hota hai. Real multi-device / public-safe deployment ke liye backend + real authentication zaroori hai (spec section 32).</div>
+  `;
+  document.getElementById("adLogoutBtn").onclick = adminLogout;
+  document.getElementById("adminAddBtn").onclick = () => openAdminForm(ADMIN_STATE.activeEntity, null);
+  document.querySelectorAll("#adminTabsRow .adminTabBtn").forEach(btn => {
+    btn.onclick = () => { ADMIN_STATE.activeEntity = btn.dataset.e; renderAdminDashboard(root); };
+  });
+  renderAdminList();
+}
+
+function entityDisplayName(entityKey, item) {
+  if (entityKey === "teams") return item.name;
+  if (entityKey === "players") return item.name;
+  if (entityKey === "series") return item.name;
+  if (entityKey === "venues") return item.name;
+  if (entityKey === "news") return item.title;
+  if (entityKey === "records") return item.title;
+  if (entityKey === "rankings") return `#${item.rank} ${item.playerName}`;
+  return item.name || item.title || "Item";
+}
+function entitySubName(entityKey, item) {
+  if (entityKey === "teams") return item.country || "";
+  if (entityKey === "players") return (item.role || "") + " • " + (item.country || "");
+  if (entityKey === "series") return (item.format || "") + " • " + (item.status || "");
+  if (entityKey === "venues") return (item.city || "") + ", " + (item.country || "");
+  if (entityKey === "news") return (item.category || "") + (item.published ? " • Published" : " • Draft");
+  if (entityKey === "records") return (item.format || "") + " • " + (item.holder || "");
+  if (entityKey === "rankings") return (item.category || "") + " • " + (item.format || "");
+  return "";
+}
+
+function renderAdminList() {
+  const key = ADMIN_STATE.activeEntity;
+  const list = dbGet(key);
+  const wrap = document.getElementById("adminListWrap");
+  if (!list.length) { wrap.innerHTML = `<div class="stateBox"><div class="de">Abhi koi ${esc(ENTITY_SCHEMAS[key].label)} nahi hai. "+ Add New" par tap karein.</div></div>`; return; }
+  wrap.innerHTML = list.map(item => `
+    <div class="adminListItem">
+      <div class="info"><div class="nm">${esc(entityDisplayName(key, item))}</div><div class="sub">${esc(entitySubName(key, item))}</div></div>
+      <div class="acts">
+        ${key === "series" ? `<button class="actBtn" title="Points Table" onclick="openPointsTable('${item.id}')">📊</button>` : ""}
+        <button class="actBtn" title="Edit" onclick="openAdminForm('${key}','${item.id}')">✏️</button>
+        <button class="actBtn" title="Delete" onclick="adminDeleteItem('${key}','${item.id}')">🗑️</button>
+      </div>
+    </div>`).join("");
+}
+
+function adminDeleteItem(key, id) {
+  if (!confirm("Delete karein? Ye undo nahi ho sakta.")) return;
+  dbSet(key, dbGet(key).filter(x => x.id !== id));
+  if (key === "series") dbSet("points", dbGet("points").filter(p => p.seriesId !== id));
+  renderAdminList();
+  showToast("Delete ho gaya");
+}
+
+/* ---- generic form ---- */
+function openAdminForm(entityKey, id) {
+  const schema = ENTITY_SCHEMAS[entityKey];
+  const item = id ? dbGet(entityKey).find(x => x.id === id) : {};
+  const teams = dbGet("teams");
+
+  const fieldsHtml = schema.fields.map(f => {
+    const val = item[f.key] !== undefined ? item[f.key] : "";
+    if (f.type === "select") {
+      return `<div class="formField"><label>${f.label}${f.required?" *":""}</label>
+        <select id="f_${f.key}">
+          <option value="">-- select --</option>
+          ${f.options.map(o => `<option value="${esc(o)}" ${val===o?'selected':''}>${esc(o)}</option>`).join("")}
+        </select></div>`;
+    }
+    if (f.type === "teamSelect") {
+      return `<div class="formField"><label>${f.label}</label>
+        <select id="f_${f.key}">
+          <option value="">-- none --</option>
+          ${teams.map(t => `<option value="${t.id}" ${val===t.id?'selected':''}>${esc(t.name)}</option>`).join("")}
+        </select></div>`;
+    }
+    if (f.type === "textarea") {
+      return `<div class="formField"><label>${f.label}${f.required?" *":""}</label><textarea id="f_${f.key}">${esc(val)}</textarea></div>`;
+    }
+    if (f.type === "checkbox") {
+      return `<div class="formField"><div class="checkRow"><input type="checkbox" id="f_${f.key}" ${val?'checked':''}><label style="margin:0;">${f.label}</label></div></div>`;
+    }
+    return `<div class="formField"><label>${f.label}${f.required?" *":""}</label><input type="${f.type}" id="f_${f.key}" value="${esc(val)}"></div>`;
+  }).join("");
+
+  document.getElementById("adminFormSheet").innerHTML = `
+    <h3>${id ? "Edit" : "Add"} ${schema.label} <button onclick="closeAdminForm()">✕</button></h3>
+    ${fieldsHtml}
+    <button class="btnPrimary" id="adminFormSaveBtn" style="margin-top:6px;">Save</button>
+  `;
+  document.getElementById("adminFormOverlay").style.display = "block";
+  document.getElementById("adminFormSaveBtn").onclick = () => {
+    const data = id ? { ...item } : { id: genId() };
+    let valid = true;
+    schema.fields.forEach(f => {
+      const el = document.getElementById("f_" + f.key);
+      let v = f.type === "checkbox" ? el.checked : el.value;
+      if (f.required && !v) valid = false;
+      if (f.type === "number" && v !== "") v = Number(v);
+      data[f.key] = v;
+    });
+    if (!valid) { showToast("Zaroori (*) fields bharein"); return; }
+    const list = dbGet(entityKey);
+    const idx = list.findIndex(x => x.id === data.id);
+    if (idx >= 0) list[idx] = data; else list.push(data);
+    dbSet(entityKey, list);
+    closeAdminForm();
+    renderAdminList();
+    showToast("✅ Save ho gaya");
+  };
+}
+function closeAdminForm() { document.getElementById("adminFormOverlay").style.display = "none"; }
+
+/* ---- points table manager (per series) ---- */
+function openPointsTable(seriesId) {
+  const series = dbGet("series").find(s => s.id === seriesId);
+  renderPointsTableSheet(seriesId, series ? series.name : "");
+  document.getElementById("pointsTableOverlay").style.display = "block";
+}
+function closePointsTable() { document.getElementById("pointsTableOverlay").style.display = "none"; }
+function renderPointsTableSheet(seriesId, seriesName) {
+  const rows = dbGet("points").filter(p => p.seriesId === seriesId);
+  document.getElementById("pointsTableSheet").innerHTML = `
+    <h3>📊 Points Table <button onclick="closePointsTable()">✕</button></h3>
+    <div style="font-size:11.5px; color:var(--text-2); margin-bottom:10px; font-weight:600;">${esc(seriesName)}</div>
+    <div class="ptRow ptHead"><div>Team</div><div>P/W/L</div><div>Pts</div><div>NRR</div></div>
+    <div id="ptRows">
+      ${rows.map(r => `
+        <div class="ptRow" data-id="${r.id}">
+          <input value="${esc(r.team)}" data-f="team">
+          <input value="${r.played}/${r.won}/${r.lost}" readonly style="opacity:0.6;">
+          <input type="number" value="${r.points}" data-f="points">
+          <input value="${esc(r.nrr)}" data-f="nrr">
+        </div>`).join("")}
+    </div>
+    <button class="btnGhost" id="ptAddRowBtn" style="width:100%; margin:12px 0;">+ Add Team Row</button>
+    <button class="btnPrimary" id="ptSaveBtn">Save Points Table</button>
+  `;
+  document.getElementById("ptAddRowBtn").onclick = () => {
+    const list = dbGet("points");
+    list.push({ id: genId(), seriesId, team: "New Team", played: 0, won: 0, lost: 0, tied: 0, nr: 0, points: 0, nrr: "0.00" });
+    dbSet("points", list);
+    renderPointsTableSheet(seriesId, seriesName);
+  };
+  document.getElementById("ptSaveBtn").onclick = () => {
+    const list = dbGet("points");
+    document.querySelectorAll("#ptRows .ptRow").forEach(rowEl => {
+      const id = rowEl.dataset.id;
+      const item = list.find(x => x.id === id);
+      if (!item) return;
+      item.team = rowEl.querySelector('[data-f="team"]').value;
+      item.points = Number(rowEl.querySelector('[data-f="points"]').value) || 0;
+      item.nrr = rowEl.querySelector('[data-f="nrr"]').value;
+    });
+    dbSet("points", list);
+    showToast("✅ Points table save ho gayi");
+    closePointsTable();
+  };
+}
+
+/* ============================================================
+   25. DATA LOADING / REFRESH
+   ============================================================ */
+async function loadMatches(showLoader) {
+  if (showLoader) {
+    document.getElementById("liveScroll").innerHTML = skeletonLiveCards(2);
+    document.getElementById("upcomingList").innerHTML = skeletonLines(2);
+    document.getElementById("resultsList").innerHTML = skeletonLines(2);
+  }
+  try {
+    const data = await CricketAPI.getCurrentMatches();
+    if (data.status === "success" && Array.isArray(data.data)) {
+      STATE.matches = data.data;
+      STATE.lastFetch = new Date();
+      renderHome();
+      if (STATE.activePage === "matches") renderMatchesPage();
+    } else {
+      throw new Error(data.message || "Unexpected response");
+    }
+  } catch (err) {
+    document.getElementById("liveScroll").innerHTML = `
+      <div class="stateBox" style="margin:0 16px; padding:24px; flex:1;">
+        <div class="ic">📡</div>
+        <div class="ti">Data load nahi ho saka</div>
+        <div class="de">Internet check karein ya thodi dair baad try karein.<br>${esc(err.message)}</div>
+        <button class="retryBtn" onclick="loadMatches(true)">Dobara Try Karein</button>
+      </div>`;
+  }
+}
+
+function applyDevModeUI() {
+  const banner = document.getElementById("devBanner");
+  const txt = document.getElementById("devBannerText");
+  const btn = document.getElementById("devToggleBtn");
+  if (STATE.devMode) {
+    banner.style.display = "flex";
+    txt.textContent = "🔧 Dev Mode: auto-refresh off, API sirf manual tap par chalegi";
+    btn.textContent = "Go Live";
+  } else {
+    banner.style.display = "none";
+  }
+}
+document.getElementById("devToggleBtn").onclick = () => {
+  STATE.devMode = !STATE.devMode;
+  applyDevModeUI();
+  if (!STATE.devMode) loadMatches(true);
+};
+applyDevModeUI();
+
+/* ============================================================
+   26. OFFLINE / ONLINE HANDLING
+   ============================================================ */
+window.addEventListener("offline", () => showToast("📴 Internet connection chala gaya"));
+window.addEventListener("online", () => { showToast("✅ Internet wapis aa gaya"); loadMatches(true); });
+
+/* ============================================================
+   27. SERVICE WORKER (PWA)
+   ============================================================ */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+
+/* ============================================================
+   28. INIT
+   ============================================================ */
+loadMatches(true);
+if (!STATE.devMode) {
+  setInterval(() => { if (!STATE.devMode) loadMatches(false); }, CONFIG.REFRESH_MS);
+}
+</script>
+</body>
+</html>
